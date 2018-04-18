@@ -20,7 +20,7 @@
       .config(routeConfig);
 
   /** @ngInject */
-  function routeConfig($urlRouterProvider, baSidebarServiceProvider) {
+  function routeConfig($urlRouterProvider, baSidebarServiceProvider, $locationProvider) {
     $urlRouterProvider.otherwise('/dashboard');
 
     baSidebarServiceProvider.addStaticItem({
@@ -57,6 +57,7 @@
         }]
       }]
     });
+    $locationProvider.html5Mode(true);
   }
 
 })();

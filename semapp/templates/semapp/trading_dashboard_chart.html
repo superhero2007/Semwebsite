@@ -1,0 +1,109 @@
+   {% block content %}
+   {% load staticfiles %}
+  
+    <div class="ibox float-e-margins">
+	  <div class="ibox-content">
+	    
+	    <div class="col-sm-6">
+			<div>
+				<h3 class="font-bold no-margins">Time Weighted Return (YTD)</h3>
+			</div>
+	    </div>
+	    
+	   
+		<div class="col-sm-4">
+		  <div id="flotlegendcontainer"></div>
+		</div>
+
+		<div class="m-t-sm">
+			<div class="row">
+				<div class="col-lg-9">
+				  <div id="flot-chart1" style="width:710px;height:300px">.
+					<!-- <canvas id="lineChart" height="114" width="710" style="width:710px;height:114px"></canvas> -->
+					 
+				 </div>			
+				</div>
+			</div>
+		</div>
+
+	  </div>
+	</div>
+	
+	<img src="" id="chart_image" style="display:block;height:0px;width:0px"/>
+
+<!-- <input type="text" value="" id="exported_chart" /> -->
+
+
+<!-- Mainly scripts -->
+<script src="{% static 'semapp/js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+
+
+
+<!-- Custom and plugin javascript -->
+<!-- <script src="{% static 'semapp/js/inspinia.js' %}"></script> -->
+<script src="{% static 'semapp/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- Flot -->
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.tooltip.min.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.resize.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.selection.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.navigate.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.symbol.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.axislabels.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.canvas.js' %}"></script>
+<script src="{% static 'semapp/js/plugins/flot/jquery.flot.time.js' %}"></script>
+
+<!-- ChartJS-->
+<script src="{% static 'semapp/js/plugins/chartJs/Chart.min.js' %}"></script>
+
+<!-- Peity -->
+<script src="{% static 'semapp/js/plugins/peity/jquery.peity.min.js' %}"></script>
+<!-- Peity demo -->
+<script src="{% static 'semapp/js/demo/peity-demo.js' %}"></script>
+
+<script>
+
+//this should be spun off into its own js file at some point
+var plot;
+$(document).ready(function() {
+
+var chartDataStrategy = {{ chart_data_strategy | safe }};
+var chartDataBenchmark = {{ chart_data_benchmark | safe }};
+
+
+  for (var x=0; x < chartDataStrategy.length; x++ ) {
+        chartDataStrategy[x][0] = createDate(chartDataStrategy[x][0]) ;
+         
+        }
+
+  for (var x=0; x < chartDataBenchmark.length; x++ ) {
+        chartDataBenchmark[x][0] = createDate(chartDataBenchmark[x][0]) }
+
+  console.log(chartDataStrategy)
+  console.log(chartDataBenchmark)
+
+  plot=$.plot($("#flot-chart1"), 
+		    [ 
+		    {data:chartDataStrategy,
+		    label:'Strategy',
+		    lines:{show:true}},
+
+		    {data:chartDataBenchmark,
+		    label:'{{benchmark_name}}',
+		    lines:{show:true}}],
+
+		    {xaxis:{mode:'time'},legend:{position:'nw'}});
+		    
+
+var chart_image=plot.getCanvas();
+//alert(chart_image.toDataURL());
+document.getElementById("chart_image").setAttribute("src",chart_image.toDataURL());
+chart_image.toBlob(function(blob) {    saveAs("te.png");
+  });
+});
+
+
+</script>
+{% endblock %}

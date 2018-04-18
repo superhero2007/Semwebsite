@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{% include "semapp/head.html" %}
+	</head>
+	<body>
+	<div class="white-bg">
+
+				
+				  <div class="wrapper wrapper-content white-bg" >
+					<div class="row">
+						{% if file_type == "html" %}
+
+						  <div class="col-sm-3">
+							<div class="ibox float-e-margins">
+								
+								<div class="ibox-title">
+									<h4 style="color:red;margin:0;"><b>Performance Summary</b></h4>
+									<h4>{{StartingDate }} - {{EndingDate }}</h4><br>
+									<h6 style="margin:0;">Starting NAV:</h6><h5>{{StartingNAV}}</h5><br><br>
+									<h6 style="margin:0;">Ending NAV:</h6><h5>{{EndingNAV}}</h5><br><br>
+									<h6 style="margin:0;">Time Weigted Return:</h6><h5>{{TimeWeightedReturn}}</h5><br><br>
+									<h6> </h6>
+								</div>
+							</div>
+						  </div>
+						  
+					  {% endif %}
+					  <div class="col-sm-7">
+							{% include "semapp/trading_dashboard_chart.html" %}				
+					  </div>
+				  </div>
+
+				  <div class="row">
+					<div class="col-sm-5">
+				<!-- -->
+						{% include "semapp/trading_dashboard_stats.html" %}				  
+					</div>
+				  </div>
+
+			</div>
+
+		</div>
+				
+
+		<script>
+
+
+		function nameFormatter(value, row) {
+		  var icon = row.id % 2 === 0 ? 'glyphicon-star' : 'glyphicon-star-empty'
+
+		  return '<i class="glyphicon ' + icon + '"></i> ' + value;
+		}
+
+
+		function checkmarkFormatter(value) {
+		  if (value ==1) { 
+			return '<i class="fa fa-check text-navy"></i>';
+		  } else { return ""; }
+		}
+
+		function confidenceFormatter(value) {
+		  if (value==null) {
+			return "n.a.";
+		  } else { 
+			return "<small>"+numeral(value).format('(0%)')+"</small>";}
+		}
+
+		function returnFormatter(value) {
+		  if (!value) {
+			return "";
+		  } else { 
+			return "<small>"+numeral(value).format('(0.0%)')+"</small>";}
+		}
+
+		function dollarvalueFormatter(value) {
+		  if (!value) {
+			return "";
+		  } else { 
+			return "<small>"+numeral(value).format('($0,0)')+"</small>";}
+		}
+
+
+		function createDate(time_t) {
+			 var date = new Date();
+			 date.setTime(time_t*1000);
+			 return date;
+		}
+
+		</script>
+	</div>
+	
+	{% include "semapp/footer.html" %}
+	
+	</body>
+
+
+</html>
+

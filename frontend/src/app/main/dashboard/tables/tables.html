@@ -1,0 +1,18 @@
+<div class="table-responsive">
+  <table class="table">
+    <tr>
+      <th class='text-center'>Metric</th>
+      <th>Portfolio</th>
+      <th>S&P 500</th>
+      <th>S&P 400</th>
+      <th>S&P 600</th>
+    </tr>
+    <tr ng-repeat='entry in dashboardData.stats'>
+      <td>{{entry.Metric}}</td>
+      <td>{{entry.Portfolio}}</td>
+      <td>{{entry.SP500}}</td>
+      <td>{{entry.SP400}}</td>
+      <td>{{entry.SP600}}</td>
+    </tr>
+  </table>
+</div>

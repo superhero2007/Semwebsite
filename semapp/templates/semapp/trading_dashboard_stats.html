@@ -1,0 +1,56 @@
+   {% block content %}
+
+          <div class="ibox float-e-margins">
+            <div class="ibox-title">
+              <h5>Key Statistics</h5>
+            </div>
+            <div class="ibox-content">
+              <table id="table"
+                     class = "table table-bordered table-condensed dataTable sortable"
+                     data-toggle = "table"
+                     data-toolbar="#toolbar"
+                     data-toolbar="#filter-bar"
+                     data-search="true"
+                     data-search-align = "left"
+                     data-show-filter= "true"
+                     data-select-item-name="toolbar1"
+                     data-show-refresh="false"
+                     data-show-toggle="true"
+                     data-show-columns="true"
+                     data-show-export="true"
+                     data-show-pagination-switch="true"
+                     data-striped = "true"
+                     data-pagination="true"
+                     data-page-list="[10, 25, 50, 100, ALL]"
+                     role="grid"
+		     data-page-size = 100>
+                <thead>
+                  <tr role="row">
+                    <th style="width: 40%" data-field = "Metric" aria-controls="table" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Metric: activate to sort column descending"><i class="{{ sort_class }}"></i><small>Metric</small></th>
+                    <th data-field = "Portfolio" aria-controls="table" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Portfolio: activate to sort column descending"><i class="{{ sort_class }}"></i><small>Portfolio</small></th>
+                    <th data-field = "SP500" aria-controls="table" rowspan="1" colspan="1" aria-sort="ascending" aria-label="S&P 500: activate to sort column descending"><i class="{{ sort_class }}"></i><small>S&P 500</small></th>
+                    <th data-field = "SP400" aria-controls="table" rowspan="1" colspan="1" aria-sort="ascending" aria-label="S&P 400: activate to sort column descending"><i class="{{ sort_class }}"></i><small>S&P 400</small></th>
+                    <th data-field = "SP600" aria-controls="table" rowspan="1" colspan="1" aria-sort="ascending" aria-label="S&P 600: activate to sort column descending"><i class="{{ sort_class }}"></i><small>S&P 600</small></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for entry in stats %} 
+                  
+                  <tr id="table-entry-{{ forloop.counter0 }}">
+                    <td ><small>{{entry.Metric}}</small></td>
+                    <td><small>{{entry.Portfolio}}</small></td>
+                    <td><small>{{entry.SP500}}</small></td>
+                    <td><small>{{entry.SP400}}</small></td>
+                    <td><small>{{entry.SP600}}</small></td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>			   
+          </div>
+   <script>
+	
+
+</script>
+{% endblock %}

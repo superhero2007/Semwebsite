@@ -1,0 +1,33 @@
+{% include "semapp/top_navbar.html" %}
+
+
+
+  <nav class="navbar navbar-static-top white-bg" role="navigation">
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav" class="">
+		<li class="inactive">
+			  <a aria-expanded="false" role="button" href="{% url 'trading_dashboard' %}"> Dashboard </a>
+		</li>
+		<li class="inactive">
+			  <a aria-expanded="false" role="button" href="{% url 'exposures' %}"> Exposures </a>
+			</li>
+
+		<li class="inactive">
+			  <a aria-expanded="false" role="button" href="{% url 'dashboard_report' %}"> Dashboard Report </a>
+		</li>
+
+		<li class="inactive">
+			  <a aria-expanded="false" role="button" href="{% url 'under_development' %}"> Top Winners/Losers </a>
+		</li>
+		
+      </ul>
+    </div>
+    
+  </nav>
+
+{% block nav %}{% endblock %}
+
+
+
+
+

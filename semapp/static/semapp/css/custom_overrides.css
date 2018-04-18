@@ -1,0 +1,73 @@
+.table > tbody > tr > td {
+	border-top: 1px solid #e7eaec;
+	line-height: 1.42857;
+	padding: 0px;
+	vertical-align: top;
+}
+#flot-chart1 .button {
+	position: absolute;
+	cursor: pointer;
+}
+
+#flot-chart1 div.button {
+	font-size: small;
+	color: #333;
+	background-color: #eee;
+	padding: 2px;
+}
+.message {
+	padding-left: 50px;
+	font-size: smaller;
+}
+
+/* form elements */
+.form-container {
+	margin-top: 20px;
+}
+
+#reset-btn {
+	float: right;
+	margin-right: 50px;
+}
+
+#threshold-field {
+	vertical-align: top;
+	width: 50px;
+}
+
+#threshold-label {
+	margin-left: 20px;
+}
+
+/* table */
+.table > thead > tr > th {
+	border-top: 1px solid #e7eaec;
+	line-height: 1.42857;
+	padding: 8px 8px 1px 0px;
+	vertical-align: top;
+}
+
+.bootstrap-table .table > tbody > tr > td {
+	padding: 3px !important;	
+}
+
+td.check-field {
+	text-align: center;
+}
+
+tr.selected-row {
+background-color: LightBlue !important;
+}
+
+tr.over-threshold {
+font-weight: bold;
+}
+
+/* top nav bar */
+input#top-search {
+	height: 36px;
+	border: 2px solid #ddd;
+	border-radius: 15px;
+	width: 300px;
+	margin-top: 7px;
+}

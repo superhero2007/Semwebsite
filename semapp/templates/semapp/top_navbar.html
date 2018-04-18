@@ -1,0 +1,80 @@
+{% load staticfiles %}
+{% load stock_extras %}
+
+
+
+  <div class="top-navigation ">
+    <div id="wrapper" style="height:50px">
+      <div id="page-wrapper222" class="white-bg">
+		<div class="row border-bottom white-bg">
+         
+         
+          <nav class="navbar navbar-static-top " role="navigation">
+            
+            <div class="navbar-header">
+              <button aria-controls="navbar" aria-expanded="false" data-target="#navbar" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+				<i class="fa fa-reorder"></i>
+              </button>
+              <a href="#" class="navbar-brand">Semanteon</a>
+            </div>
+            
+            <div class="navbar-collapse collapse" id="navbar">
+              <ul class="nav navbar-nav ">
+				<li class="inactive">
+					<a aria-expanded="false" role="button" href="{% url 'trading_dashboard' %}"> Trading</a>
+				</li>
+
+				<li class="inactive">
+					  <a aria-expanded="false" role="button" href="{% url 'network_chart' %}"> Stock Correlation </a>
+				</li>
+
+				<li class="inactive">
+					<a aria-expanded="false" role="button" href="{% url 'equities_latest_signals' %}"> Equity Signals </a>
+				</li>
+
+				<li class="inactive">
+					<a aria-expanded="false" role="button" href="{% url 'insider_transactions_latest_filings' %}"> Insider Transactions </a>
+				</li>
+
+				<li class="inactive">
+					<a aria-expanded="false" role="button" href="{% url 'under_development' %}"> Macro Signals</a>
+				</li>
+
+              </ul>
+             
+              <ul class="nav navbar-top-links navbar-right">
+				  {% if m_page == "dash_report" %}
+				
+					<li class="inactive">
+						<a aria-expanded="false" 
+						role="button" href="{% url 'print_dashboard_pdf' %}"  
+						onclick="return generate_pdf()" >  <span class="glyphicon glyphicon-print"></span>Generate PDF </a>
+				
+					</li>
+					
+				{% endif %}
+				<li>
+					<a href="{% url 'password_change' %}">
+					<i class ="fa fa-key"></i>Change Password
+				  </a>
+				</li>
+				<li>
+				  <a href="{% url 'user_logout' %}">
+					<i class="fa fa-sign-out"></i> Log out
+				  </a>
+				</li>
+				
+              </ul>
+            
+            </div>
+         
+         
+          </nav>
+	  
+		</div>
+	  </div>
+	</div>
+  </div>
+
+
+{% block nav %}{% endblock %}

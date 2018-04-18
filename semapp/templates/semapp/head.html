@@ -1,0 +1,29 @@
+{% load staticfiles %}
+{% block head %}
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>{{ title }}</title>
+	<link href="{% static 'semapp/css/bootstrap.min.css'%}" rel="stylesheet">
+	<link href="{% static 'semapp/font-awesome/css/font-awesome.css'%}" rel="stylesheet">
+	<link href="{% static 'semapp/css/animate.css'%}" rel="stylesheet">
+	<link rel="stylesheet" href="{% static 'semapp/bootstrap-table/src/bootstrap-table.css'%}">
+	<link rel="stylesheet" href="{% static '//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/css/bootstrap-editable.css'%}">
+	<link href="{% static 'semapp/css/style.css'%}" rel="stylesheet">
+	<link href="{% static 'semapp/css/custom_overrides.css'%}" rel="stylesheet">
+	<link href="{% static 'semapp/css/custom_overrides.css'%}" rel="stylesheet">
+
+	<script src="{% static 'semapp/numeral/numeral.js' %}"></script>
+	<script src="{% static 'semapp/js/jquery-2.1.1.js' %}"></script>
+	<script src="{% static 'semapp/js/bootstrap.min.js'%}"></script>
+
+
+	<script src="{% static 'semapp/bootstrap-table/src/extensions/export/bootstrap-table-export.js'%}"></script>
+	<script src="{% static '//rawgit.com/kayalshri/tableExport.jquery.plugin/master/tableExport.js'%}"></script>
+	<script src="{% static '//rawgit.com/kayalshri/tableExport.jquery.plugin/master/jquery.base64.js'%}"></script>
+	<script src="{% static 'semapp/bootstrap-table/src/extensions/editable/bootstrap-table-editable.js' %}"></script>
+	<script src="{% static '//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js'%}"></script>
+	<script src="{% static 'semapp/bootstrap-table/src/extensions/filter/bootstrap-table-filter.js'%}"></script>
+	<script src="{% static 'semapp/js/plugins/visjs/visjs.js'%}"></script>
+{% endblock %}
