@@ -1,12 +1,12 @@
 /**
- * @author v.lugovksy
- * created on 16.12.2015
+ * @author max.apollo
+ * created on 04.20.2018
  */
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.dashboard').config(chartJsConfig)
-    .controller('DashboardLineChartCtrl', DashboardLineChartCtrl);
+  angular.module('BlurAdmin.main.trading').config(chartJsConfig)
+    .controller('TradingLineChartCtrl', TradingLineChartCtrl);
 
   function createDate(time_t) {
     var date = new Date(time_t * 1000);
@@ -14,8 +14,8 @@
   }
 
   /** @ngInject */
-  function DashboardLineChartCtrl($scope, DashboardService) {
-    DashboardService.getData().then(function(data) {
+  function TradingLineChartCtrl($scope, TradingService) {
+    TradingService.getData().then(function(data) {
       var chartDataStrategy = [];
       var chartDataBenchmark = [];
 

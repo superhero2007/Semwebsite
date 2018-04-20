@@ -1,6 +1,6 @@
 /**
- * @author v.lugovsky
- * created on 16.12.2015
+ * @author max.apollo
+ * created on 04.20.2018
  */
 (function () {
   'use strict';
@@ -8,13 +8,14 @@
   angular.module('BlurAdmin.main', [
     'ui.router',
 
-    'BlurAdmin.main.dashboard'
+    'BlurAdmin.main.trading',
+    'BlurAdmin.main.network'
   ]).config(routeConfig);
 
   /** @ngInject */
   function routeConfig($urlRouterProvider, baSidebarServiceProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
-    $urlRouterProvider.otherwise('/Trading/Dashboard');
+    $urlRouterProvider.otherwise('/trading');
   }
 
 })();

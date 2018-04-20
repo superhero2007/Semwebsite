@@ -1,18 +1,18 @@
 /**
- * @author v.lugovksy
- * created on 16.12.2015
+ * @author max.apollo
+ * created on 04.20.2018
  */
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.dashboard')
+  angular.module('BlurAdmin.main.trading')
       .directive('popularApp', popularApp);
 
   /** @ngInject */
   function popularApp() {
     return {
       restrict: 'E',
-      templateUrl: 'app/main/dashboard/popularApp/popularApp.html'
+      templateUrl: 'app/main/trading/popularApp/popularApp.html'
     };
   }
 })();
