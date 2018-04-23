@@ -42,7 +42,7 @@ class TradingExposuresView(APIView):
     exposures = prep_data.trading_create_exposure_data()
 
     # build context
-    context = {'data': exposures.to_dict(orient='records'}
+    context = {'data': exposures.to_dict(orient='records')}
 
     return Response(context)
     # return render(request, 'semapp/trading_dashboard.html', context)
