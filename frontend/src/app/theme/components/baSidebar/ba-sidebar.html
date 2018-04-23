@@ -6,12 +6,12 @@
         ba-sidebar-toggling-item="item">
 
       <a ng-mouseenter="hoverItem($event, item)" ui-state="item.stateRef || ''" ng-href="{{::(item.fixedHref ? item.fixedHref: '')}}" ng-if="::!item.subMenu" class="al-sidebar-list-link">
-        <i class="{{ ::item.icon }}"></i><span>{{ ::item.title }}</span>
+        <span>{{ ::item.title }}</span>
       </a>
 
       <a ng-mouseenter="hoverItem($event, item)" ng-if="::item.subMenu"
          class="al-sidebar-list-link" ba-ui-sref-toggler>
-        <i class="{{ ::item.icon }}"></i><span>{{ ::item.title }}</span>
+        <span>{{ ::item.title }}</span>
         <b class="fa fa-angle-down" ui-sref-active="fa-angle-up"
            ng-if="::item.subMenu"></b>
       </a>

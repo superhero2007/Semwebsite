@@ -13,11 +13,21 @@
     $stateProvider
       .state('trading', {
         url: '/trading',
-        templateUrl: 'app/main/trading/trading.html',
-        controller: 'TradingController',
+        template : '<ui-view autoscroll="true" autoscroll-body-top></ui-view>',
+        abstract: true,
         title: 'Trading',
         sidebarMeta: {
-          icon: 'ion-android-home',
+          icon: '',
+          order: 0,
+        },
+      })
+      .state('trading.dashboard', {
+        url: '/dashboard',
+        templateUrl: 'app/main/trading/trading.html',
+        controller: 'TradingController',
+        title: 'Dashboard',
+        sidebarMeta: {
+          icon: '',
           order: 0,
         },
       });

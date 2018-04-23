@@ -7,22 +7,28 @@
   </div>
 </div>
 <div class="popular-app-info row">
-  <div class="col-xs-12 text-left">
-    <div class="info-label">Starting NAV:</div>
+  <div class="col-xs-12">
+    <div class="pull-left">
+      <div>Starting NAV:</div>
+    </div>
+    <div class='pull-right'>
+      <div>{{tradingData.StartingNAV}}</div>
+    </div>
   </div>
-  <div class='col-xs-12 text-right'>
-    <div>{{tradingData.StartingNAV}}</div>
+  <div class="col-xs-12 labels">
+    <div class="pull-left">
+      <div>Ending NAV:</div>
+    </div>
+    <div class='pull-right'>
+      <div>{{tradingData.EndingNAV}}</div>
+    </div>
   </div>
-  <div class="col-xs-12 text-left labels">
-    <div class="info-label">Ending NAV:</div>
-  </div>
-  <div class='col-xs-12 text-right'>
-    <div>{{tradingData.EndingNAV}}</div>
-  </div>
-  <div class="col-xs-12 text-left labels">
-    <div class="info-label">Time Weigted Return:</div>
-  </div>
-  <div class='col-xs-12 text-right'>
-    <div>{{tradingData.TimeWeightedReturn}}</div>
+  <div class="col-xs-12 labels">
+    <div class="pull-left">
+      <div>Time Weigted Return:</div>
+    </div>
+    <div class='pull-right'>
+      <div>{{tradingData.TimeWeightedReturn}}</div>
+    </div>
   </div>
 </div>

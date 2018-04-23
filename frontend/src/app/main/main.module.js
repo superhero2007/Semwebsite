@@ -14,8 +14,8 @@
 
   /** @ngInject */
   function routeConfig($urlRouterProvider, baSidebarServiceProvider, $locationProvider) {
+    $urlRouterProvider.otherwise('/trading/dashboard');
     $locationProvider.html5Mode(true);
-    $urlRouterProvider.otherwise('/trading');
   }
 
 })();

@@ -15,9 +15,9 @@
         url: '/network',
         templateUrl: 'app/main/network/network.html',
         controller: 'NetworkController',
-        title: 'Network',
+        title: 'Correlation',
         sidebarMeta: {
-          icon: 'ion-gear-a',
+          icon: '',
           order: 100,
         },
       });
@@ -117,16 +117,21 @@
             m_edges[i].x=position;
             new_edges.push(m_edges[i]);
             
-            if (!new_nodes.find(obj=>obj.id==m_edges[i].to)) {
-              new_child=m_nodes.find(obj=>obj.id==m_edges[i].to);
+            var findObj = new_nodes.find(
+              function(obj) { 
+                return obj.id == m_edges[i].to
+              }
+            );
+            if (!findObj) {
+              new_child=m_nodes.find( function(obj) { return obj.id==m_edges[i].to });
               // console.log(new_child.label);       
               new_child.x=position+child_num*2
               new_child.y=position+child_num*2
               new_nodes.push(new_child);
               //new_nodes.push(m_nodes.find(obj=>obj.id==m_edges[i].to));
             } 
-            if (!new_nodes.find(obj=>obj.id==m_edges[i].from)) {
-              new_child=m_nodes.find(obj=>obj.id==m_edges[i].from);
+            if (!new_nodes.find(function(obj) { return obj.id==m_edges[i].from })) {
+              new_child=m_nodes.find(function(obj) { return obj.id==m_edges[i].from });
               // console.log(new_child.label); 
               new_child.x=position+child_num*2
               new_child.y=position+child_num*2
@@ -146,6 +151,14 @@
 
       $scope.filter_company = function () {
         var test_value = $scope.filter.ticker;
+        var m_nodes = $scope.network.body.nodes;
+        for (var i in m_nodes) {
+          if (m_nodes[i].options.label.toLowerCase() == test_value.toLowerCase() ) {
+            $scope.network.focus(i, {scale: 3});
+            console.log(m_nodes[i])
+          }
+        }
+        /* var test_value = $scope.filter.ticker;
         var m_nodes=$scope.my_nodes;
         var m_edges=$scope.my_edges;
         var new_nodes= [];
@@ -155,7 +168,7 @@
         var new_child;
         for (var i=0; i < m_nodes.length; i++) {
           if (m_nodes[i].label.toLowerCase() == test_value.toLowerCase() ) {
-            if (!new_nodes.find(obj=>obj.id==m_nodes[i].id)) {
+            if (!new_nodes.find(function(obj) {return obj.id==m_nodes[i].id })) {
               // console.log(m_nodes[i].label);  
               position+=5;  
               m_nodes[i].x=position;  
@@ -168,8 +181,8 @@
               if (m_edges[x].from==m_nodes[i].id || m_edges[x].to==m_nodes[i].id) {
                 new_edges.push(m_edges[x]);
                 if (m_edges[x].to!=m_nodes[i].id) {
-                  if (!new_nodes.find(obj=>obj.id==m_edges[x].to)) {
-                    new_child=m_nodes.find(obj=>obj.id==m_edges[x].to);
+                  if (!new_nodes.find(function(obj) { return obj.id==m_edges[x].to })) {
+                    new_child=m_nodes.find( function(obj) { return obj.id==m_edges[x].to });
                     // console.log(new_child.label);       
                     new_child.x=position+child_num*2
                     new_child.y=position+child_num*2
@@ -177,8 +190,8 @@
                   }
                 }
                 if (m_edges[x].from!=m_nodes[i].id) {
-                  if (!new_nodes.find(obj=>obj.id==m_edges[x].from)) {
-                    new_child=m_nodes.find(obj=>obj.id==m_edges[x].from);
+                  if (!new_nodes.find(function(obj){ return obj.id==m_edges[x].from })) {
+                    new_child=m_nodes.find(function(obj){ return obj.id==m_edges[x].from });
                     // console.log(new_child.label); 
                     new_child.x=position+child_num*2
                     new_child.y=position+child_num*2
@@ -199,7 +212,7 @@
           nodes: new_nodes,
           edges: $scope.my_edges
         };
-        $scope.network = new vis.Network($scope.container, $scope.data, {});
+        $scope.network = new vis.Network($scope.container, $scope.data, {}); */
       }
     });
 
