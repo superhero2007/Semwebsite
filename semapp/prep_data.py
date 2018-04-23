@@ -63,20 +63,22 @@ def trading_create_exposure_data():
     pos['weight'] = pos.MarketValueBase / pos.nav
     pos['weight_abs'] = pos.weight.abs()
 
-    exposure = {}
-    for c,l in [('zacks_x_sector_desc','sector'),('zacks_m_ind_desc','industry')]:
-        net_exposure = pos.groupby(['TradeDate',c]).weight.sum().to_frame('Current')
-        net_exposure['1 wk delta'] = net_exposure.groupby(level=c)['Current'].diff(5)
-        net_exposure['1 mo delta'] = net_exposure.groupby(level=c)['Current'].diff(20)
+    latest = pos[pos.TradeDate == pos.TradeDate.max()]
+    exposures = pd.pivot_table(latest,values = ['weight_abs'],index=['zacks_x_sector_desc'],columns=['zacks_m_ind_desc'],aggfunc=np.sum,margins=True)
+    exposures = exposures.stack()
 
-        gross_exposure = pos.groupby(['TradeDate',c]).weight_abs.sum().to_frame('Current')
-        gross_exposure['1 wk delta'] = net_exposure.groupby(level=c)['Current'].diff(5)
-        gross_exposure['1 mo delta'] = net_exposure.groupby(level=c)['Current'].diff(20)
+    exposures.columns = ['Gross']
+    exposures.reset_index(inplace=True,drop=False)
+    exposures = exposures[exposures.zacks_x_sector_desc!='All']
 
-        exposure[l+'_net_exposure'] =  net_exposure.loc[net_exposure.index.get_level_values('TradeDate').max()]
-        exposure[l+'_gross_exposure'] =  gross_exposure.loc[net_exposure.index.get_level_values('TradeDate').max()]
+    net_industry_exposure = pos.groupby(['TradeDate','zacks_m_ind_desc']).weight.sum().to_frame('Net')
+    net_industry_exposure['Net - 1wk delta'] = net_industry_exposure.groupby(level='zacks_m_ind_desc')['Net'].diff(5)
+    net_industry_exposure['Net - 1mo delta'] = net_industry_exposure.groupby(level='zacks_m_ind_desc')['Net'].diff(20)
+    net_industry_exposure = net_industry_exposure.loc[net_industry_exposure.index.get_level_values('TradeDate').max()]
 
-    return (exposure)
+    exposures = exposures.merge(net_industry_exposure,left_on='zacks_m_ind_desc',right_index=True,how = 'left')
+
+    return (exposures)
 
 def create_drawdowns(returns):
     # Calculate the cumulative returns curve

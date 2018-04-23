@@ -37,6 +37,15 @@ class TradingView(APIView):
     return Response(context)
     # return render(request, 'semapp/trading_dashboard.html', context)
 
+class TradingExposuresView(APIView):
+  def get(self, request, format=None):
+    exposures = prep_data.trading_create_exposure_data()
+
+    # build context
+    context = {'data': exposures.to_dict(orient='records'}
+
+    return Response(context)
+    # return render(request, 'semapp/trading_dashboard.html', context)
 
 
 class NetworkView(APIView):
