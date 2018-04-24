@@ -63,22 +63,28 @@ def trading_create_exposure_data():
     pos['weight'] = pos.MarketValueBase / pos.nav
     pos['weight_abs'] = pos.weight.abs()
 
-    latest = pos[pos.TradeDate == pos.TradeDate.max()]
-    exposures = pd.pivot_table(latest,values = ['weight_abs'],index=['zacks_x_sector_desc'],columns=['zacks_m_ind_desc'],aggfunc=np.sum,margins=True)
-    exposures = exposures.stack()
+    gross_ind = pos.groupby(['TradeDate','zacks_x_sector_desc','zacks_m_ind_desc']).weight_abs.sum().to_frame('Gross')
+    net_ind = pos.groupby(['TradeDate','zacks_x_sector_desc','zacks_m_ind_desc']).weight.sum().to_frame('Net_unadj')
+    net_ind = net_ind.join(gross_ind)
+    net_ind['Net'] = net_ind['Net_unadj'] / net_ind['Gross']
+    net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(5)
+    net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(20)
+    net_ind.reset_index(level = ['zacks_x_sector_desc','zacks_m_ind_desc'], drop=False, inplace=True)
 
-    exposures.columns = ['Gross']
-    exposures.reset_index(inplace=True,drop=False)
-    exposures = exposures[exposures.zacks_x_sector_desc!='All']
+    gross_sec = pos.groupby(['TradeDate','zacks_x_sector_desc']).weight_abs.sum().to_frame('Gross')
+    net_sec = pos.groupby(['TradeDate','zacks_x_sector_desc']).weight.sum().to_frame('Net_unadj')
+    net_sec = net_sec.join(gross_sec)
+    net_sec['Net'] = net_sec['Net_unadj'] / net_sec['Gross']
+    net_sec['Net - 1wk delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
+    net_sec['Net - 1mo delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
+    net_sec.reset_index(level = ['zacks_x_sector_desc'], drop=False, inplace=True)
+    net_sec['zacks_m_ind_desc'] ='All'
 
-    net_industry_exposure = pos.groupby(['TradeDate','zacks_m_ind_desc']).weight.sum().to_frame('Net')
-    net_industry_exposure['Net - 1wk delta'] = net_industry_exposure.groupby(level='zacks_m_ind_desc')['Net'].diff(5)
-    net_industry_exposure['Net - 1mo delta'] = net_industry_exposure.groupby(level='zacks_m_ind_desc')['Net'].diff(20)
-    net_industry_exposure = net_industry_exposure.loc[net_industry_exposure.index.get_level_values('TradeDate').max()]
+    max_date = pos.TradeDate.max()
 
-    exposures = exposures.merge(net_industry_exposure,left_on='zacks_m_ind_desc',right_index=True,how = 'left')
-    exposures = exposures.fillna(0)
-
+    exposures = pd.concat([net_ind.loc[max_date],net_sec.loc[max_date]],ignore_index=True)
+    exposures = exposures.drop('Net_unadj',axis=1)
+    
     return (exposures)
 
 def create_drawdowns(returns):
