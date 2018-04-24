@@ -1,29 +1,33 @@
 <div class="table-responsive">
   <table class="table">
     <tr>
-      <th>zacks_x_sector_desc</th>
-      <th>zacks_m_ind_desc</th>
+      <th></th>
+      <th>Sector / Industry</th>
       <th>Gross</th>
       <th>Net</th>
       <th>Net - 1wk delta</th>
       <th>Net - 1mo delta</th>  
     </tr>
     <tr ng-repeat='entry in exposuresData' ng-class="{'header': entry.zacks_m_ind_desc == 'All'}" ng-click="collapse(entry)" ng-show="entry.zacks_m_ind_desc === 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1">
-      <td ng-attr-colspan="{{entry.zacks_m_ind_desc === 'All' ? 6 : 1}}">{{entry.zacks_x_sector_desc}}</td>
       <td>
-        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.zacks_m_ind_desc}}</span>
+        <i class="ion-plus-round" ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1}"></i>
+        <i class="ion-minus-round" ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) === -1}"></i>
+      </td>
+      <td ng-class="{'hide': entry.zacks_m_ind_desc !== 'All'}">{{entry.zacks_x_sector_desc}}</td>
+      <td ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}" style="padding-left: 20px;">
+        {{entry.zacks_m_ind_desc}}
       </td>
       <td>
-        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.Gross}}</span>
+        {{entry.Gross.toFixed(2)}}
       </td>
       <td ng-class="{'greenBack': entry['Net'] > 0.01, 'redBack': entry['Net'] < -0.01}">
-        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.Net}}</span>
+        {{entry.Net.toFixed(2)}}
       </td>
       <td>
-        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry["Net - 1wk delta"]}}</span>
+        {{entry["Net - 1wk delta"].toFixed(2)}}
       </td>
       <td>
-        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry["Net - 1mo delta"]}}</span>
+        {{entry["Net - 1mo delta"].toFixed(2)}}
       </td>
     </tr>
   </table>
@@ -31,11 +35,14 @@
 <style>
 tr.header {
   cursor: pointer;
+  font-weight: 600;
 }
 .greenBack {
   background: green;
+  color: white;
 }
 .redBack {
   background: red;
+  color: white;
 }
 </style>
