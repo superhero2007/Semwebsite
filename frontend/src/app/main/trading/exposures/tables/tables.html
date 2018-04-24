@@ -18,16 +18,16 @@
         {{entry.zacks_m_ind_desc}}
       </td>
       <td>
-        {{entry.Gross.toFixed(2)}}
+        {{(100 * entry.Gross).toFixed()}}%
       </td>
       <td ng-class="{'greenBack': entry['Net'] > 0.01, 'redBack': entry['Net'] < -0.01}">
-        {{entry.Net.toFixed(2)}}
+        {{(100 * entry.Net).toFixed()}}%
       </td>
       <td>
-        {{entry["Net - 1wk delta"].toFixed(2)}}
+        {{(100 * entry["Net - 1wk delta"]).toFixed()}}%
       </td>
       <td>
-        {{entry["Net - 1mo delta"].toFixed(2)}}
+        {{(100 * entry["Net - 1mo delta"]).toFixed()}}%
       </td>
     </tr>
   </table>
