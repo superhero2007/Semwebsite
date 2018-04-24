@@ -39,6 +39,9 @@
       ];
 
       $scope.options = {
+        legend: {
+          display: true
+        },
         scales: {
           xAxes: [{
             type: 'time',

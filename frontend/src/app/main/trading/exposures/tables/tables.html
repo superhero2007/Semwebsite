@@ -20,7 +20,13 @@
       <td>
         {{(100 * entry.Gross).toFixed()}}%
       </td>
-      <td ng-class="{'greenBack': entry['Net'] > 0.01, 'redBack': entry['Net'] < -0.01}">
+      <td ng-style="{
+        'background': (
+          entry.Net > 0.01 ? 'rgba(32, 158, 145, {{entry.Net}})' : (
+            entry.Net < -0.01 ? 'rgba(232, 86, 86, {{-entry.Net}})' : 'white'
+          )
+        )
+      }">
         {{(100 * entry.Net).toFixed()}}%
       </td>
       <td>
@@ -36,13 +42,5 @@
 tr.header {
   cursor: pointer;
   font-weight: 600;
-}
-.greenBack {
-  background: green;
-  color: white;
-}
-.redBack {
-  background: red;
-  color: white;
 }
 </style>
