@@ -5,8 +5,10 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading', [])
-    .config(routeConfig);
+  angular.module('BlurAdmin.main.trading', [
+    'BlurAdmin.main.trading.dashboard',
+    'BlurAdmin.main.trading.exposures',
+  ]).config(routeConfig);
 
   /** @ngInject */
   function routeConfig($stateProvider) {
@@ -21,35 +23,6 @@
           order: 0,
         },
       })
-      .state('trading.dashboard', {
-        url: '/dashboard',
-        templateUrl: 'app/main/trading/trading.html',
-        controller: 'TradingController',
-        title: 'Dashboard',
-        sidebarMeta: {
-          icon: '',
-          order: 0,
-        },
-      });
   }
-
-  angular.module('BlurAdmin.main.trading')
-    .factory('TradingService', function($http) {
-      return {
-        getData: function () {
-          return $http.get('/api/Trading/Dashboard').then(function(result) {
-            return result.data
-          });
-        }
-      };
-    });
-
-  angular.module('BlurAdmin.main.trading')
-    .controller('TradingController', function($scope, TradingService) {
-      TradingService.getData().then(function(data) {
-        $scope.tradingData = data;
-      })
-    });
-
 
 })();

@@ -5,14 +5,14 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading')
+  angular.module('BlurAdmin.main.trading.dashboard')
       .directive('tradingTable', tradingTable);
 
   /** @ngInject */
   function tradingTable() {
     return {
       restrict: 'E',
-      templateUrl: 'app/main/trading/tables/tables.html'
+      templateUrl: 'app/main/trading/dashboard/tables/tables.html'
     };
   }
 })();

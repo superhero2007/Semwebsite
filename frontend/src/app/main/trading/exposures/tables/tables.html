@@ -1,0 +1,41 @@
+<div class="table-responsive">
+  <table class="table">
+    <tr>
+      <th>zacks_x_sector_desc</th>
+      <th>zacks_m_ind_desc</th>
+      <th>Gross</th>
+      <th>Net</th>
+      <th>Net - 1wk delta</th>
+      <th>Net - 1mo delta</th>  
+    </tr>
+    <tr ng-repeat='entry in exposuresData' ng-class="{'header': entry.zacks_m_ind_desc == 'All'}" ng-click="collapse(entry)" ng-show="entry.zacks_m_ind_desc === 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1">
+      <td ng-attr-colspan="{{entry.zacks_m_ind_desc === 'All' ? 6 : 1}}">{{entry.zacks_x_sector_desc}}</td>
+      <td>
+        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.zacks_m_ind_desc}}</span>
+      </td>
+      <td>
+        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.Gross}}</span>
+      </td>
+      <td ng-class="{'greenBack': entry['Net'] > 0.01, 'redBack': entry['Net'] < -0.01}">
+        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry.Net}}</span>
+      </td>
+      <td>
+        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry["Net - 1wk delta"]}}</span>
+      </td>
+      <td>
+        <span ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}">{{entry["Net - 1mo delta"]}}</span>
+      </td>
+    </tr>
+  </table>
+</div>
+<style>
+tr.header {
+  cursor: pointer;
+}
+.greenBack {
+  background: green;
+}
+.redBack {
+  background: red;
+}
+</style>

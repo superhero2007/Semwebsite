@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading').config(chartJsConfig)
+  angular.module('BlurAdmin.main.trading.dashboard').config(chartJsConfig)
     .controller('TradingLineChartCtrl', TradingLineChartCtrl);
 
   function createDate(time_t) {
@@ -14,8 +14,8 @@
   }
 
   /** @ngInject */
-  function TradingLineChartCtrl($scope, TradingService) {
-    TradingService.getData().then(function(data) {
+  function TradingLineChartCtrl($scope, DashboardService) {
+    DashboardService.getData().then(function(data) {
       var chartDataStrategy = [];
       var chartDataBenchmark = [];
 

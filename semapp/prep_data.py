@@ -77,6 +77,7 @@ def trading_create_exposure_data():
     net_industry_exposure = net_industry_exposure.loc[net_industry_exposure.index.get_level_values('TradeDate').max()]
 
     exposures = exposures.merge(net_industry_exposure,left_on='zacks_m_ind_desc',right_index=True,how = 'left')
+    exposures = exposures.fillna(0)
 
     return (exposures)
 
