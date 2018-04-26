@@ -5,14 +5,14 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading.dashboard')
+  angular.module('BlurAdmin.main.dashboard.trading.dashboard')
       .directive('popularApp', popularApp);
 
   /** @ngInject */
   function popularApp() {
     return {
       restrict: 'E',
-      templateUrl: 'app/main/trading/dashboard/popularApp/popularApp.html'
+      templateUrl: 'app/main/dashboard/trading/dashboard/popularApp/popularApp.html'
     };
   }
 })();

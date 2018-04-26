@@ -6,16 +6,33 @@
   'use strict';
 
   angular.module('BlurAdmin.main', [
-    'ui.router',
-
-    'BlurAdmin.main.trading',
-    'BlurAdmin.main.network'
+    'BlurAdmin.main.login',
+    'BlurAdmin.main.dashboard'
   ]).config(routeConfig);
 
   /** @ngInject */
   function routeConfig($urlRouterProvider, baSidebarServiceProvider, $locationProvider) {
-    $urlRouterProvider.otherwise('/trading/dashboard');
-    $locationProvider.html5Mode(true);
+    $urlRouterProvider.otherwise('/login');
+    // $locationProvider.html5Mode(true);
   }
+
+  angular.module('BlurAdmin.main')
+    .run(['$rootScope', '$location', '$cookies', '$http', '$state',
+      function ($rootScope, $location, $cookies, $http, $state) {
+        // keep user logged in after page refresh
+        $rootScope.globals = $cookies.get('globals') || {};
+        if ($rootScope.globals.currentUser) {
+            // $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata; // jshint ignore:line
+        }
+
+        $rootScope.$on('$stateChangeStart', function (event, next, current) {
+            // redirect to login page if not logged in
+            console.log(next.name)
+            if (next.name !== 'login' && !$rootScope.globals.currentUser) {
+              $state.go('login')
+              event.preventDefault();
+            }
+        });
+      }]);
 
 })();

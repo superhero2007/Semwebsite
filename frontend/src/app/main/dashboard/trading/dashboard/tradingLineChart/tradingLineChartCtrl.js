@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading.dashboard').config(chartJsConfig)
+  angular.module('BlurAdmin.main.dashboard.trading.dashboard').config(chartJsConfig)
     .controller('TradingLineChartCtrl', TradingLineChartCtrl);
 
   function createDate(time_t) {

@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading.dashboard')
+  angular.module('BlurAdmin.main.dashboard.trading.dashboard')
       .directive('tradingLineChart', tradingLineChart);
 
   /** @ngInject */
@@ -13,7 +13,7 @@
     return {
       restrict: 'E',
       controller: 'TradingLineChartCtrl',
-      templateUrl: 'app/main/trading/dashboard/tradingLineChart/tradingLineChart.html'
+      templateUrl: 'app/main/dashboard/trading/dashboard/tradingLineChart/tradingLineChart.html'
     };
   }
 })();

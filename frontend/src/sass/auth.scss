@@ -26,6 +26,10 @@ $text-color: #ffffff;
   @include placeholderStyle($text-color, 0.6);
 }
 
+.route-view {
+  height: 100%;
+}
+
 .auth-main {
   display: flex;
   align-items: center;

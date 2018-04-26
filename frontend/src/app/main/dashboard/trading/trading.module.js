@@ -5,15 +5,16 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading', [
-    'BlurAdmin.main.trading.dashboard',
-    'BlurAdmin.main.trading.exposures',
-  ]).config(routeConfig);
+  angular.module('BlurAdmin.main.dashboard.trading', [
+    'BlurAdmin.main.dashboard.trading.dashboard',
+    'BlurAdmin.main.dashboard.trading.exposures'
+  ])
+    .config(routeConfig);
 
   /** @ngInject */
   function routeConfig($stateProvider) {
     $stateProvider
-      .state('trading', {
+      .state('dashboard.trading', {
         url: '/trading',
         template : '<ui-view autoscroll="true" autoscroll-body-top></ui-view>',
         abstract: true,

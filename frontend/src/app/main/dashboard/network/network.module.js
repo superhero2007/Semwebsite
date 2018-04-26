@@ -5,15 +5,15 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.network', [])
+  angular.module('BlurAdmin.main.dashboard.network', [])
     .config(routeConfig);
 
   /** @ngInject */
   function routeConfig($stateProvider) {
     $stateProvider
-      .state('network', {
+      .state('dashboard.network', {
         url: '/network',
-        templateUrl: 'app/main/network/network.html',
+        templateUrl: 'app/main/dashboard/network/network.html',
         controller: 'NetworkController',
         title: 'Correlation',
         sidebarMeta: {
@@ -23,7 +23,7 @@
       });
   }
 
-  angular.module('BlurAdmin.main.network')
+  angular.module('BlurAdmin.main.dashboard.network')
     .factory('NetworkService', function($http) {
       return {
         getData: function () {
@@ -34,7 +34,7 @@
       }
     });
 
-  angular.module('BlurAdmin.main.network')
+  angular.module('BlurAdmin.main.dashboard.network')
     .controller('NetworkController', function($scope, $timeout, NetworkService) {
       NetworkService.getData().then(function(data) {
         $scope.my_nodes = data.my_nodes;

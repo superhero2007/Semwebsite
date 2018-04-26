@@ -5,25 +5,25 @@
 (function () {
   'use strict';
 
-  angular.module('BlurAdmin.main.trading.exposures', [])
+  angular.module('BlurAdmin.main.dashboard.trading.exposures', [])
     .config(routeConfig);
 
   /** @ngInject */
   function routeConfig($stateProvider) {
     $stateProvider
-      .state('trading.exposures', {
+      .state('dashboard.trading.exposures', {
         url: '/exposures',
-        templateUrl: 'app/main/trading/exposures/exposures.html',
+        templateUrl: 'app/main/dashboard/trading/exposures/exposures.html',
         controller: 'ExposuresController',
         title: 'Exposures',
         sidebarMeta: {
           icon: '',
           order: 100,
         },
-      });
+      })
   }
 
-  angular.module('BlurAdmin.main.trading.exposures')
+  angular.module('BlurAdmin.main.dashboard.trading.exposures')
     .factory('ExposuresService', function($http) {
       return {
         getData: function () {
@@ -34,7 +34,7 @@
       };
     });
 
-  angular.module('BlurAdmin.main.trading.exposures')
+  angular.module('BlurAdmin.main.dashboard.trading.exposures')
     .controller('ExposuresController', function($scope, ExposuresService) {
       ExposuresService.getData().then(function(data) {
         $scope.exposuresData = data.data.sort(function (a, b) {

@@ -9,4 +9,5 @@ urlpatterns = [
 	path('api/Trading/Dashboard/', views.TradingView.as_view(), name='trading_dashboard'),
 	path('api/Trading/Exposures/', views.TradingExposuresView.as_view(), name='trading_exposures'),
 	path('api/Trading/Network/', views.NetworkView.as_view(), name='trading_network'),
+	path('api/', include('authentication.urls')),
 ]
