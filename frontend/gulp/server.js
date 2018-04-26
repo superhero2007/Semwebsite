@@ -36,12 +36,19 @@ function browserSyncInit(baseDir, browser) {
   // server.middleware = proxyMiddleware('/users', {target: 'http://jsonplaceholder.typicode.com', changeOrigin: true});
 
   server.middleware = proxyMiddleware(
-    [ '/api', '/media', '/static' ],
+    [ '/api', '/media', '/static', '/admin' ],
     {
       target: 'http://localhost:8000',
       changeOrigin: true,
       pathRewrite: {
         '\/api(\/\w+)+' : '/api/**/'
+      }
+    },
+    {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+      pathRewrite: {
+        '\/admin(\/\w+)+' : '/admin/**/'
       }
     }
   );

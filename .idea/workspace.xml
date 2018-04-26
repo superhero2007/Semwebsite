@@ -3,32 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="40b77aad-fe8b-4c11-a623-10331febca5e" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/bower.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/bower.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/gulp/inject.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/gulp/inject.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/main.module.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/main/main.module.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/network/network.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/network/network.module.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/dashboard.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/dashboard.module.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/popularApp/popularApp.directive.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/popularApp/popularApp.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/tables/tables.directive.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/tables/tables.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/tradingLineChart/tradingLineChart.directive.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/tradingLineChart/tradingLineChart.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/dashboard/tradingLineChart/tradingLineChartCtrl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/exposures/exposures.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/exposures/exposures.module.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/exposures/tables/tables.directive.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/exposures/tables/tables.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/main/trading/trading.module.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/theme/components/baSidebar/baSidebar.service.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/theme/components/baSidebar/baSidebar.service.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/sass/auth.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/sass/auth.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/sass/theme/conf/_mixins.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/sass/theme/conf/_mixins.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/semapp/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/semapp/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/semwebsite/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/semwebsite/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/gulp/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/gulp/server.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -57,8 +32,8 @@
       <file leaf-file-name="settings.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/semwebsite/settings.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="45" column="33" lean-forward="true" selection-start-line="45" selection-start-column="33" selection-end-line="45" selection-end-column="33" />
+            <state relative-caret-position="243">
+              <caret line="38" column="33" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="33" />
             </state>
           </provider>
         </entry>
@@ -66,8 +41,8 @@
       <file leaf-file-name="login.module.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/frontend/src/app/main/login/login.module.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="321">
-              <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
+            <state relative-caret-position="262">
+              <caret line="63" column="60" selection-start-line="63" selection-start-column="60" selection-end-line="63" selection-end-column="60" />
             </state>
           </provider>
         </entry>
@@ -93,7 +68,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/authentication/views.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="375">
@@ -105,7 +80,24 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="server.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/frontend/gulp/server.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="381">
+              <caret line="50" column="35" selection-start-line="50" selection-start-column="35" selection-end-line="50" selection-end-column="35" />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>api</find>
+    </findStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/frontend/gulp</dir>
+    </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -117,6 +109,7 @@
         <option value="$PROJECT_DIR$/semwebsite/settings.py" />
         <option value="$PROJECT_DIR$/frontend/src/app/main/login/login.module.js" />
         <option value="$PROJECT_DIR$/authentication/views.py" />
+        <option value="$PROJECT_DIR$/frontend/gulp/server.js" />
       </list>
     </option>
   </component>
@@ -165,31 +158,13 @@
               <item name="semwebsite" type="b2602c69:ProjectViewProjectNode" />
               <item name="semwebsite" type="462c0819:PsiDirectoryNode" />
               <item name="frontend" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="gulp" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="semwebsite" type="b2602c69:ProjectViewProjectNode" />
               <item name="semwebsite" type="462c0819:PsiDirectoryNode" />
               <item name="frontend" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="semwebsite" type="b2602c69:ProjectViewProjectNode" />
-              <item name="semwebsite" type="462c0819:PsiDirectoryNode" />
-              <item name="frontend" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="semwebsite" type="b2602c69:ProjectViewProjectNode" />
-              <item name="semwebsite" type="462c0819:PsiDirectoryNode" />
-              <item name="frontend" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="login" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="semwebsite" type="b2602c69:ProjectViewProjectNode" />
@@ -272,15 +247,15 @@
       <window_info anchor="bottom" id="Run" order="2" weight="0.32977587" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" weight="0.32977587" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19199122" />
+      <window_info anchor="bottom" id="Terminal" visible="true" weight="0.32977587" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19199122" />
       <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
       <window_info anchor="right" id="Database" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="right" id="SciView" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.31163287" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.31163287" />
       <window_info id="Favorites" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -322,6 +297,37 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/semapp/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="51" column="37" selection-start-line="51" selection-start-column="37" selection-end-line="51" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/bower_components/angular/angular.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="172">
+          <caret line="11889" column="4" selection-start-line="11889" selection-start-column="4" selection-end-line="11889" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/semwebsite/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="38" column="33" selection-start-line="38" selection-start-column="33" selection-end-line="38" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/src/app/main/login/login.module.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="262">
+          <caret line="63" column="60" selection-start-line="63" selection-start-column="60" selection-end-line="63" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/authentication/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -339,37 +345,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/semapp/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="51" column="37" selection-start-line="51" selection-start-column="37" selection-end-line="51" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/semwebsite/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="45" column="33" lean-forward="true" selection-start-line="45" selection-start-column="33" selection-end-line="45" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frontend/bower_components/angular/angular.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="11889" column="4" selection-start-line="11889" selection-start-column="4" selection-end-line="11889" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/frontend/src/app/main/login/login.module.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="35" lean-forward="true" selection-start-line="35" selection-end-line="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/authentication/views.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="375">
@@ -377,6 +352,13 @@
           <folding>
             <element signature="e#0#59#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frontend/gulp/server.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="50" column="35" selection-start-line="50" selection-start-column="35" selection-end-line="50" selection-end-column="35" />
         </state>
       </provider>
     </entry>
