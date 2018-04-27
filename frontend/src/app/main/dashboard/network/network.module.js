@@ -27,7 +27,7 @@
     .factory('NetworkService', function($http) {
       return {
         getData: function () {
-          return $http.get('/api/Trading/Network').then(function(result) {
+          return $http.get('/api/Network').then(function(result) {
             return result.data
           });
         }
