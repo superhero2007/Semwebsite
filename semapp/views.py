@@ -1,17 +1,58 @@
-from django.shortcuts import render
-
 # Create your views here.
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-import datetime,time
+DataDir = 'semapp/data'
 
-import semapp.prep_data as prep_data
+# for debug
+#class APIView(object):
+#  pass
+#DataDir = 'data'
+
+import datetime,time
+import pandas as pd
+import sys,os
+import numpy as np
+from pandas.tseries.offsets import BDay
+import scipy.stats
+
+EnterLong = 0.57
+EnterShort = 0.43
 
 class TradingView(APIView):
   def get(self, request, format=None):
-    ah,stats = prep_data.trading_create_dashboard_data()
+    ah = pd.read_hdf(os.path.join(DataDir,'account_history.hdf'),'table')
+    ah['Portfolio_daily_return'] = ah.PnlReturn
+    ah['Portfolio_equity_curve'] = (1+ah.CumPnl)
+
+    benchmarks = [('SP500','S&P5'),('SP400','SPMC'),('SP600','S&P6')]
+
+    for b,m_ticker in benchmarks:
+        b_data = pd.read_hdf(os.path.join(DataDir,b+'.hdf'),'table')
+        ah[b+'_daily_return'] = ah.TradeDate.map(b_data.adj_close.pct_change())
+        ah[b+'_equity_curve'] = (1+ah[b+'_daily_return']).cumprod()
+
+    stats_cols = ['Portfolio'] + [x[0] for x in benchmarks]
+    stats = pd.DataFrame(columns = stats_cols)
+
+    for c in stats_cols:
+        daily_ret = ah[c+'_daily_return'] 
+        stats.loc['Cumulative Return (bps)',c] = "{0:.0f}".format((ah[c+'_equity_curve'].iloc[-1]-1) * 10000)
+        stats.loc['Winning Days (%)',c] = "{0:.0%}".format((daily_ret >0).mean())
+        stats.loc['Min Return (bps)',c] = "{0:.0f}".format(daily_ret.min() * 10000)
+        stats.loc['Max Return (bps)',c] = "{0:.0f}".format(daily_ret.max() * 10000)
+        stats.loc['Mean Return (bps)',c] = "{0:.0f}".format(daily_ret.mean() * 10000)
+        stats.loc['Std Dev Return (bps)',c] = "{0:.0f}".format(daily_ret.std() * 10000)
+        stats.loc['Skew',c] = "{0:.1f}".format(scipy.stats.skew(daily_ret))
+        stats.loc['Kurtosis',c] = "{0:.1f}".format(scipy.stats.kurtosis(daily_ret))
+        stats.loc['Volatility - Annualized (%)',c] = "{0:.1%}".format(np.sqrt(252) * daily_ret.std() )
+        stats.loc['Sharpe - Annualized',c] = "{0:.1f}".format(np.sqrt(252) * daily_ret.mean() / daily_ret.std())
+        stats.loc['Sortino - Annualized',c] = "{0:.1f}".format(np.sqrt(252) * daily_ret.mean() / daily_ret.clip(upper=0).std())
+        drawdown_series,max_drawdown,drawdown_dur = self.create_drawdowns(ah[c+'_equity_curve'])
+        stats.loc['Max Drawdown (bps)',c] = "{0:.0f}".format(max_drawdown * 10000)
+        stats.loc['Max Drawdown Days',c] = "{0:.0f}".format(drawdown_dur)
+    stats.index.name = 'Metric'
 
     StartingDate = ah.TradeDate.iloc[0]
     EndingDate = ah.TradeDate.iloc[-1]
@@ -35,17 +76,107 @@ class TradingView(APIView):
         "title":"Dashboard"}
 
     return Response(context)
-    # return render(request, 'semapp/trading_dashboard.html', context)
+
+  def create_drawdowns(self,returns):
+    # Calculate the cumulative returns curve
+    # and set up the High Water Mark
+    hwm = [0]
+
+    # Create the drawdown and duration series
+    idx = returns.index
+    drawdown = pd.Series(index=idx)
+    duration = pd.Series(index=idx)
+
+    # Loop over the index range
+    for t in range(1, len(idx)):
+        hwm.append(max(hwm[t - 1], returns.ix[t]))
+        drawdown.ix[t] = (hwm[t] - returns.ix[t]) / hwm[t]
+        duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t - 1] + 1)
+
+    return drawdown, drawdown.max(), duration.max()
+
+  
 
 class TradingExposuresView(APIView):
   def get(self, request, format=None):
-    exposures = prep_data.trading_create_exposure_data()
+    ## ticker matching doesn't work well. Needs to be converted to CUSIP
+    pos = pd.read_hdf(os.path.join(DataDir,'nav_portfolio.hdf'),'table')
+    pos.Symbol = pos.Symbol.str.replace(' US','')
+
+    sm = pd.read_hdf(os.path.join(DataDir,'sec_master.hdf'),'table')
+    sm.ticker = sm.ticker.str.replace('.','/')
+
+    pos = pos.merge(sm, left_on='Symbol',right_on='ticker',how='left')
+    daily_nav = pos.groupby('TradeDate').MarketValueBase.sum()
+
+    pos['nav'] = pos.TradeDate.map(daily_nav)
+
+    #######NEED TO FIX CASH ############
+    pos['weight'] = pos.MarketValueBase / pos.nav
+    pos['weight_abs'] = pos.weight.abs()
+
+    gross_ind = pos.groupby(['TradeDate','zacks_x_sector_desc','zacks_m_ind_desc']).weight_abs.sum().to_frame('Gross')
+    net_ind = pos.groupby(['TradeDate','zacks_x_sector_desc','zacks_m_ind_desc']).weight.sum().to_frame('Net_unadj')
+    net_ind = net_ind.join(gross_ind)
+    net_ind['Net'] = net_ind['Net_unadj'] / net_ind['Gross']
+    net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(5)
+    net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(20)
+    net_ind.reset_index(level = ['zacks_x_sector_desc','zacks_m_ind_desc'], drop=False, inplace=True)
+
+    gross_sec = pos.groupby(['TradeDate','zacks_x_sector_desc']).weight_abs.sum().to_frame('Gross')
+    net_sec = pos.groupby(['TradeDate','zacks_x_sector_desc']).weight.sum().to_frame('Net_unadj')
+    net_sec = net_sec.join(gross_sec)
+    net_sec['Net'] = net_sec['Net_unadj'] / net_sec['Gross']
+    net_sec['Net - 1wk delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
+    net_sec['Net - 1mo delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
+    net_sec.reset_index(level = ['zacks_x_sector_desc'], drop=False, inplace=True)
+    net_sec['zacks_m_ind_desc'] ='All'
+
+    max_date = pos.TradeDate.max()
+
+    exposures = pd.concat([net_ind.loc[max_date],net_sec.loc[max_date]],ignore_index=True)
+    exposures = exposures.drop('Net_unadj',axis=1)
 
     # build context
     context = {'data': exposures.to_dict(orient='records')}
 
     return Response(context)
-    # return render(request, 'semapp/trading_dashboard.html', context)
+
+
+class SignalsLatestView(APIView):
+  def get(self, request, format=None):
+
+    filepath = os.path.join(DataDir,'equities_signals.hdf')
+
+    # find max date in file
+    start = (datetime.datetime.now() - BDay(200)).strftime('%Y-%m-%d')
+    max_date = pd.read_hdf(filepath,'table',where='data_date > "%s"'%start,columns=['data_date'])['data_date'].max()
+    max_date = max_date.strftime('%Y-%m-%d')
+    signals = pd.read_hdf(filepath,'table',where='data_date == "%s"'%max_date)
+
+    signals['SignalDirection'] = signals.SignalConfidence.apply(lambda x: 'Long' if x >= EnterLong else 'Short' if x <= EnterShort else 'Neutral')
+
+    # build context
+    context = {'data': signals.to_dict(orient='records')}
+
+    return Response(context)
+
+class SignalsTickerView(APIView):
+  def get(self, request, ticker, format=None):
+    filepath = os.path.join(DataDir,'equities_signals.hdf')
+    ticker = ticker.upper()
+    signal_data_columns = ['data_date','market_cap','ticker','zacks_x_sector_desc','zacks_m_ind_desc','close','adj_close','SignalConfidence']
+
+    signals = pd.read_hdf(filepath,'table',where='ticker=="%s"'%ticker)[signal_data_columns]
+
+    ## Check if stacked signal data exists
+    if (not(len(signals))):
+        return ({'data':None})
+    
+    # build context
+    context = {'data': signals.to_dict(orient='records')}
+
+    return Response(context)
 
 
 class NetworkView(APIView):
@@ -5545,4 +5676,4 @@ class NetworkView(APIView):
     }
 
     return Response(data)
-    # return render(request, 'semapp/trading_dashboard.html', context)
+

@@ -5,10 +5,10 @@ import datetime,time
 from pandas.tseries.offsets import BDay
 import scipy.stats
 
-DataDir = 'semapp/data'
+DataDir = 'data'
 
-EnterLong = 0.58
-EnterShort = 0.42
+EnterLong = 0.57
+EnterShort = 0.43
 
 
 def trading_create_dashboard_data():
@@ -159,7 +159,7 @@ def get_latest_equities_signals():
     filepath = os.path.join(DataDir,'equities_signals.hdf')
 
     # find max date in file
-    start = (datetime.datetime.now() - BDay(5)).strftime('%Y-%m-%d')
+    start = (datetime.datetime.now() - BDay(200)).strftime('%Y-%m-%d')
     max_date = pd.read_hdf(filepath,'table',where='data_date > "%s"'%start,columns=['data_date'])['data_date'].max()
     max_date = max_date.strftime('%Y-%m-%d')
     signal_data = pd.read_hdf(filepath,'table',where='data_date == "%s"'%max_date)
