@@ -145,22 +145,38 @@ class TradingExposuresView(APIView):
 
 class SignalsLatestView(APIView):
   def get(self, request, format=None):
-
-    filepath = os.path.join(DataDir,'equities_signals.hdf')
-
-    # find max date in file
-    start = (datetime.datetime.now() - BDay(200)).strftime('%Y-%m-%d')
-    max_date = pd.read_hdf(filepath,'table',where='data_date > "%s"'%start,columns=['data_date'])['data_date'].max()
-    max_date = max_date.strftime('%Y-%m-%d')
-    signals = pd.read_hdf(filepath,'table',where='data_date == "%s"'%max_date)
-
-    signals['SignalDirection'] = signals.SignalConfidence.apply(lambda x: 'Long' if x >= EnterLong else 'Short' if x <= EnterShort else 'Neutral')
+    filepath = os.path.join(DataDir,'equities_signals_latest.hdf')
+    signals = pd.read_hdf(filepath,'table')
 
     # build context
     context = {'data': signals.to_dict(orient='records')}
 
     return Response(context)
 
+class SignalsSecIndView(APIView):
+  def get(self, request, format=None):
+    filepath = os.path.join(DataDir,'equities_signals_sec_ind.hdf')
+    signals = pd.read_hdf(filepath,'table')
+    context = {'data': signals.to_dict(orient='records')}
+    return Response(context)
+
+class SignalsSectorTableView(APIView):
+  def get(self, request, sector, format=None):
+    filepath = os.path.join(DataDir,'equities_signals_full.hdf')
+    signals = pd.read_hdf(filepath,'table',where='zacks_x_sector_desc=="%s"'%sector)
+    # build context
+    context = {'data': signals.to_dict(orient='records')}
+
+    return Response(context)
+
+class SignalsIndustryTableView(APIView):
+  def get(self, request, industry, format=None):
+    filepath = os.path.join(DataDir,'equities_signals_full.hdf')
+    signals = pd.read_hdf(filepath,'table',where='zacks_m_ind_desc=="%s"'%industry)
+    # build context
+    context = {'data': signals.to_dict(orient='records')}
+    return Response(context)
+  
 class SignalsTickerView(APIView):
   def get(self, request, ticker, format=None):
     filepath = os.path.join(DataDir,'equities_signals.hdf')
