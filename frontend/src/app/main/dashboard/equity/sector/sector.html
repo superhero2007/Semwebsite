@@ -1,8 +1,41 @@
 <div class="row">
-  <div class="col-xs-12"
-       ba-panel
-       ba-panel-class="sector-table">
-    <sector-table></sector-table>
-  </div>
+    <div class="col-xs-12"
+         ba-panel
+         ba-panel-class="sector-table">
+        <sector-table></sector-table>
+    </div>
 </div>
-
+<div class="row" ng-if="filterData.length">
+    <div class="col-xs-12"
+         ba-panel
+         ba-panel-class="sector-table"
+         ba-panel-title="{{ title }}">
+        <div class="table-responsive">
+            <table class="table">
+                <tr>
+                    <th>Date</th>
+                    <th ng-click="setSort('ticker')">Ticker</th>
+                    <th>Market Cap</th>
+                    <th ng-click="setSort('sector')">Sector</th>
+                    <th ng-click="setSort('industry')">Industry</th>
+                    <th ng-click="setSort('signal')">SignalConfidence</th>
+                </tr>
+                <tr ng-repeat='entry in filterData'>
+                    <td>{{ entry.data_date.substr(0, 10) }}</td>
+                    <td class="ticker" ng-click="showGraph(entry.ticker)">{{ entry.ticker }}</td>
+                    <td>{{ (entry.market_cap / 1000000000).toFixed(1) }}B</td>
+                    <td>{{ entry.zacks_x_sector_desc }}</td>
+                    <td>{{ entry.zacks_m_ind_desc }}</td>
+                    <td>{{ entry.SignalConfidence.toFixed(2) }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    td.ticker {
+        cursor: pointer;
+        font-weight: 600;
+        color: #209e91;
+    }
+</style>

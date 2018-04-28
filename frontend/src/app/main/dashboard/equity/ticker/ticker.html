@@ -20,16 +20,16 @@
         <div class="table-responsive" ng-if="tickerData.length">
             <table class="table">
                 <tr>
-                    <th>data_date</th>
-                    <th>adj_close</th>
-                    <th>market_cap</th>
+                    <th>Date</th>
+                    <th>Adj Close</th>
+                    <th>Market Cap</th>
                     <th>SignalConfidence</th>
                 </tr>
                 <tr ng-repeat='entry in tickerData'>
                     <td>{{ entry.data_date.substr(0, 10) }}</td>
                     <td>{{ entry.adj_close }}</td>
-                    <td>{{ entry.market_cap }}</td>
-                    <td>{{ entry.SignalConfidence }}</td>
+                    <td>{{ (entry.market_cap / 1000000000).toFixed(1) }}B</td>
+                    <td>{{ entry.SignalConfidence.toFixed(2) }}</td>
                 </tr>
             </table>
         </div>
