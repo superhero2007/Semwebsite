@@ -1,30 +1,37 @@
 <div class="table-responsive">
-  <table class="table">
-    <tr>
-      <th>data_date</th>
-      <th>ticker</th>
-      <th>close</th>
-      <th>adj_close</th>
-      <th>market_cap</th>
-      <th>zacks_x_sector_desc</th>
-      <th>zacks_m_ind_desc</th>
-      <th>zacks_m_ind_code</th>
-      <th>zacks_x_sector_code</th>
-      <th>SignalConfidence</th>
-      <th>SignalDirection</th>
-    </tr>
-    <tr ng-repeat='entry in latestData'>
-      <td>{{entry.data_date}}</td>
-      <td>{{entry.ticker}}</td>
-      <td>{{entry.close}}</td>
-      <td>{{entry.adj_close}}</td>
-      <td>{{entry.market_cap}}</td>
-      <td>{{entry.zacks_x_sector_desc}}</td>
-      <td>{{entry.zacks_m_ind_desc}}</td>
-      <td>{{entry.zacks_m_ind_code}}</td>
-      <td>{{entry.zacks_x_sector_code}}</td>
-      <td>{{entry.SignalConfidence}}</td>
-      <td>{{entry.SignalDirection}}</td>
-    </tr>
-  </table>
+    <table class="table">
+        <tr>
+            <th>data_date</th>
+            <th>ticker</th>
+            <th>close</th>
+            <th>adj_close</th>
+            <th>market_cap</th>
+            <th>zacks_x_sector_desc</th>
+            <th>zacks_m_ind_desc</th>
+            <th>zacks_m_ind_code</th>
+            <th>zacks_x_sector_code</th>
+            <th>SignalConfidence</th>
+            <th>SignalDirection</th>
+        </tr>
+        <tr ng-repeat='entry in latestData'>
+            <td>{{ entry.data_date.substr(0, 10)}}</td>
+            <td class="ticker" ng-click="showGraph(entry.ticker)">{{ entry.ticker }}</td>
+            <td>{{ entry.close }}</td>
+            <td>{{ entry.adj_close }}</td>
+            <td>{{ entry.market_cap }}</td>
+            <td>{{ entry.zacks_x_sector_desc }}</td>
+            <td>{{ entry.zacks_m_ind_desc }}</td>
+            <td>{{ entry.zacks_m_ind_code }}</td>
+            <td>{{ entry.zacks_x_sector_code }}</td>
+            <td>{{ entry.SignalConfidence }}</td>
+            <td>{{ entry.SignalDirection }}</td>
+        </tr>
+    </table>
 </div>
+<style>
+    td.ticker {
+        cursor: pointer;
+        font-weight: 600;
+        color: #209e91;
+    }
+</style>

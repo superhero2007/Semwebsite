@@ -1,24 +1,23 @@
-<div class="table-responsive">
-  <table class="table">
-    <tr>
-      <th>data_date</th>
-      <th>ticker</th>
-      <th>close</th>
-      <th>adj_close</th>
-      <th>market_cap</th>
-      <th>zacks_x_sector_desc</th>
-      <th>zacks_m_ind_desc</th>
-      <th>SignalConfidence</th>
-    </tr>
-    <tr ng-repeat='entry in tickerData'>
-      <td>{{entry.data_date}}</td>
-      <td>{{entry.ticker}}</td>
-      <td>{{entry.close}}</td>
-      <td>{{entry.adj_close}}</td>
-      <td>{{entry.market_cap}}</td>
-      <td>{{entry.zacks_x_sector_desc}}</td>
-      <td>{{entry.zacks_m_ind_desc}}</td>
-      <td>{{entry.SignalConfidence}}</td>
-    </tr>
-  </table>
+<div class="popular-app-cost row">
+  <div class="col-xs-12">
+    {{ tickerData[0].ticker }}
+  </div>
+</div>
+<div class="popular-app-info row">
+  <div class="col-xs-12">
+    <div class="pull-left">
+      <div>Sector:</div>
+    </div>
+    <div class='pull-right'>
+      <div>{{ tickerData[0].zacks_x_sector_desc }}</div>
+    </div>
+  </div>
+  <div class="col-xs-12 grid-h">
+    <div class="pull-left">
+      <div>Industry:</div>
+    </div>
+    <div class='pull-right'>
+      <div>{{ tickerData[0].zacks_m_ind_desc }}</div>
+    </div>
+  </div>
 </div>

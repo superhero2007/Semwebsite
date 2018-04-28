@@ -1,11 +1,37 @@
 <div class="row">
+    <div class="col-xlg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12"
+         ba-panel>
+        <form class="row form-inline">
+            <div class="form-group col-sm-3 col-xs-6">
+                <input type="text" class="form-control" placeholder="Search Ticker" ng-change="filter_ticker()"
+                       ng-model="filter.ticker">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
     <div class="col-xlg-4 col-lg-4 col-md-5 col-sm-12 col-xs-12"
-       ba-panel
-       ba-panel-class="ticker-app medium-panel">
-    <ticker-app></ticker-app>
-  </div>
-  <div class="col-xlg-8 col-lg-8 col-md-7 col-sm-12 col-xs-12">
-    <!-- <ticker-line-chart></ticker-line-chart> -->
-      Ticker Graph
-  </div>
+         ba-panel
+         ba-panel-class="popular-app medium-panel">
+        <ticker-app ng-if="tickerData.length"></ticker-app>
+    </div>
+    <div class="col-xlg-8 col-lg-8 col-md-7 col-sm-12 col-xs-12">
+        <!-- <ticker-line-chart></ticker-line-chart> -->
+        <div class="table-responsive" ng-if="tickerData.length">
+            <table class="table">
+                <tr>
+                    <th>data_date</th>
+                    <th>adj_close</th>
+                    <th>market_cap</th>
+                    <th>SignalConfidence</th>
+                </tr>
+                <tr ng-repeat='entry in tickerData'>
+                    <td>{{ entry.data_date.substr(0, 10) }}</td>
+                    <td>{{ entry.adj_close }}</td>
+                    <td>{{ entry.market_cap }}</td>
+                    <td>{{ entry.SignalConfidence }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </div>

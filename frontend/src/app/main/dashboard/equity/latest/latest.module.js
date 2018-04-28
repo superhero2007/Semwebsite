@@ -35,9 +35,12 @@
     });
 
   angular.module('BlurAdmin.main.dashboard.equity.latest')
-    .controller('LatestController', function($scope, LatestService) {
+    .controller('LatestController', function($scope, $state, LatestService) {
       LatestService.getData().then(function(data) {
         $scope.latestData = data.data;
       })
+      $scope.showGraph = function(ticker) {
+        $state.go('dashboard.equity.ticker', {obj: ticker})
+      }
     });
 })();

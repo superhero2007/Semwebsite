@@ -1,46 +1,106 @@
 <div class="table-responsive">
-  <table class="table">
-    <tr>
-      <th></th>
-      <th>Sector / Industry</th>
-      <th>Gross</th>
-      <th>Net</th>
-      <th>Net - 1wk delta</th>
-      <th>Net - 1mo delta</th>
-    </tr>
-    <tr ng-repeat='entry in exposuresData' ng-class="{'header': entry.zacks_m_ind_desc == 'All'}" ng-click="collapse(entry)" ng-show="entry.zacks_m_ind_desc === 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1">
-      <td>
-        <i class="ion-plus-round" ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1}"></i>
-        <i class="ion-minus-round" ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) === -1}"></i>
-      </td>
-      <td ng-class="{'hide': entry.zacks_m_ind_desc !== 'All'}">{{entry.zacks_x_sector_desc}}</td>
-      <td ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}" style="padding-left: 20px;">
-        {{entry.zacks_m_ind_desc}}
-      </td>
-      <td>
-        {{(100 * entry.Gross).toFixed()}}%
-      </td>
-      <td ng-style="{
-        'background': (
-          entry.Net > 0.01 ? 'rgba(32, 158, 145, {{entry.Net}})' : (
-            entry.Net < -0.01 ? 'rgba(232, 86, 86, {{-entry.Net}})' : 'white'
-          )
-        )
-      }">
-        {{(100 * entry.Net).toFixed()}}%
-      </td>
-      <td>
-        {{(100 * entry["Net - 1wk delta"]).toFixed()}}%
-      </td>
-      <td>
-        {{(100 * entry["Net - 1mo delta"]).toFixed()}}%
-      </td>
-    </tr>
-  </table>
+    <table class="table">
+        <tr>
+            <th></th>
+            <th>Sector / Industry</th>
+            <th>Net</th>
+            <th>Net - 1wk delta</th>
+            <th>Net - 1mo delta</th>
+            <th>Long</th>
+            <th>Neutral</th>
+            <th>Short</th>
+        </tr>
+        <tr ng-repeat='entry in exposuresData' ng-class="{'header': entry.zacks_m_ind_desc == 'All'}"
+            ng-show="entry.zacks_m_ind_desc === 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1">
+            <td ng-click="collapse(entry)">
+                <i class="ion-plus-round"
+                   ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1}"></i>
+                <i class="ion-minus-round"
+                   ng-class="{'hide': entry.zacks_m_ind_desc !== 'All' || headers.indexOf(entry.zacks_x_sector_desc) === -1}"></i>
+            </td>
+            <td ng-class="{'hide': entry.zacks_m_ind_desc !== 'All'}" class="ticker" ng-click="showSector(entry.zacks_x_sector_desc)">{{ entry.zacks_x_sector_desc }}</td>
+            <td ng-class="{'hide': entry.zacks_m_ind_desc === 'All'}" class="ticker" ng-click="showIndustry(entry.zacks_m_ind_desc)" style="padding-left: 20px;">
+                {{ entry.zacks_m_ind_desc }}
+            </td>
+            <td ng-style="{'background': (entry.Net > 0.01 ? 'rgba(32, 158, 145, {{ entry.Net }})' : (entry.Net < -0.01 ? 'rgba(232, 86, 86, {{ -entry.Net }})' : 'white'))}">
+                {{(100 * entry.Net).toFixed()}}%
+            </td>
+            <td>
+                {{(100 * entry["Net - 1wk delta"]).toFixed()}}%
+            </td>
+            <td>
+                {{(100 * entry["Net - 1mo delta"]).toFixed()}}%
+            </td>
+            <td>
+                {{ entry.Long }}
+            </td>
+            <td>
+                {{ entry.Neutral }}
+            </td>
+            <td>
+                {{ entry.Short }}
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="table-responsive" ng-if="sectorData.length">
+    <table class="table">
+        <tr>
+            <th>data_date</th>
+            <th>ticker</th>
+            <th>close</th>
+            <th>adj_close</th>
+            <th>market_cap</th>
+            <th>zacks_x_sector_desc</th>
+            <th>zacks_m_ind_desc</th>
+            <th>SignalConfidence</th>
+        </tr>
+        <tr ng-repeat='entry in sectorData'>
+            <td>{{ entry.data_date.substr(0, 10) }}</td>
+            <td class="ticker" ng-click="showGraph(entry.ticker)">{{ entry.ticker }}</td>
+            <td>{{ entry.close }}</td>
+            <td>{{ entry.adj_close }}</td>
+            <td>{{ entry.market_cap }}</td>
+            <td>{{ entry.zacks_x_sector_desc }}</td>
+            <td>{{ entry.zacks_m_ind_desc }}</td>
+            <td>{{ entry.SignalConfidence }}</td>
+        </tr>
+    </table>
+</div>
+<div class="table-responsive" ng-if="industryData.length">
+    <table class="table">
+        <tr>
+            <th>data_date</th>
+            <th>ticker</th>
+            <th>close</th>
+            <th>adj_close</th>
+            <th>market_cap</th>
+            <th>zacks_x_sector_desc</th>
+            <th>zacks_m_ind_desc</th>
+            <th>SignalConfidence</th>
+        </tr>
+        <tr ng-repeat='entry in industryData'>
+            <td>{{ entry.data_date.substr(0, 10) }}</td>
+            <td class="ticker" ng-click="showGraph(entry.ticker)">{{ entry.ticker }}</td>
+            <td>{{ entry.close }}</td>
+            <td>{{ entry.adj_close }}</td>
+            <td>{{ entry.market_cap }}</td>
+            <td>{{ entry.zacks_x_sector_desc }}</td>
+            <td>{{ entry.zacks_m_ind_desc }}</td>
+            <td>{{ entry.SignalConfidence }}</td>
+        </tr>
+    </table>
 </div>
 <style>
-tr.header {
-  cursor: pointer;
-  font-weight: 600;
-}
+    tr.header {
+        font-weight: 600;
+    }
+    tr.header td:nth-child(1) {
+        cursor: pointer;
+    }
+    td.ticker {
+        cursor: pointer;
+        font-weight: 600;
+        color: #209e91;
+    }
 </style>
