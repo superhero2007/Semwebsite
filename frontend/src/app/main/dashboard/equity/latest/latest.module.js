@@ -50,20 +50,20 @@
                     $scope.ref = 1;
                 $scope.sortKey = sortKey;
                 $scope.latestData = $scope.latestData.sort(function (a, b) {
-                    let ref = $scope.ref;
-                    if (sortKey == 'ticker') {
+                    var ref = $scope.ref;
+                    if (sortKey === 'ticker') {
                         if (a.ticker > b.ticker) return ref;
                         else return -ref;
                     }
-                    if (sortKey == 'sector') {
+                    if (sortKey === 'sector') {
                         if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return ref;
                         else return -ref;
                     }
-                    if (sortKey == 'industry') {
+                    if (sortKey === 'industry') {
                         if (a.zacks_m_ind_desc > b.zacks_m_ind_desc) return ref;
                         else return -ref;
                     }
-                    if (sortKey == 'signal') {
+                    if (sortKey === 'signal') {
                         if (a.SignalConfidence > b.SignalConfidence) return ref;
                         else return -ref;
                     }

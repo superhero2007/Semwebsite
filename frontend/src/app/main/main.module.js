@@ -19,6 +19,8 @@
   angular.module('BlurAdmin.main')
     .run(['$rootScope', '$location', '$cookies', '$http', '$state',
       function ($rootScope, $location, $cookies, $http, $state) {
+        $http.defaults.xsrfCookieName = 'csrftoken';
+        $http.defaults.xsrfHeaderName = 'X-CSRFToken';
         // keep user logged in after page refresh
         $rootScope.globals = $cookies.get('globals') || {};
         if ($rootScope.globals.currentUser) {
@@ -29,8 +31,8 @@
             // redirect to login page if not logged in
             console.log(next.name)
             if (next.name !== 'login' && !$rootScope.globals.currentUser) {
-              $state.go('login')
-              event.preventDefault();
+              // $state.go('login')
+              // event.preventDefault();
             }
         });
       }]);

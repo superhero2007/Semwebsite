@@ -35,8 +35,6 @@
 
 
                     // Use this for real authentication
-                    $http.defaults.xsrfCookieName = 'csrftoken';
-                    $http.defaults.xsrfHeaderName = 'X-CSRFToken';
                     $http.post('/api/user/', {username: username, password: password})
                         .success(function (response) {
                             callback(response);
