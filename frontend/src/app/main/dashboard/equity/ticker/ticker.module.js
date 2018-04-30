@@ -249,6 +249,9 @@
             $scope.showChart = function () {
                 TickerService.getData($scope.filter.ticker).then(function (data) {
                     $scope.tickerData = data.data;
+                    if (!$scope.tickerData) {
+                        return
+                    }
                     for (var i = 0; i < $scope.tickerData.length; i++) {
                         $scope.tickerData[i].max = 1;
                         $scope.tickerData[i].long = 0.65;

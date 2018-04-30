@@ -1,4 +1,4 @@
-$sidebar-width: 180px;
+$sidebar-width: 140px;
 $angle-left: "\f100";
 $angle-right: "\f101";
 
@@ -63,7 +63,7 @@ $angle-right: "\f101";
 a.al-sidebar-list-link {
   display: block;
   height: 42px;
-  padding-left: 30px;
+  padding-left: 15px;
   text-shadow: none;
   font-size: 13px;
   text-decoration: none;
@@ -137,7 +137,7 @@ a.al-sidebar-list-link {
       font-size: 13px;
       text-decoration: none;
       color: $sidebar-text;
-      padding-left: 40px;
+      padding-left: 25px;
       height: auto;
       line-height: 29px;
       &:hover {
