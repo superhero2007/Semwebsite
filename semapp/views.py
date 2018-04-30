@@ -215,9 +215,10 @@ class CorrelationView(APIView):
             dislocations = pd.read_csv(DataDir+'/correlation_network_files/dislocations_'+str(aggregation)+'minute_' + lookback + '_lookback.csv')
             dislocations = dislocations[dislocations.weight>=corr_threshold].reset_index(drop=True)
 
-            df['delta_1day'] = df.comp1_F_1day_abs_return - df.comp2_F_1day_abs_return
-            df['delta_2day'] = df.comp1_F_1day_abs_return - df.comp2_F_1day_abs_return
-
+            dislocations = dislocations[['ticker1', 'ticker2', 'weight',
+                                         'comp1_H_1day_abs_return', 'comp2_H_1day_abs_return','delta_1day',
+                                         'comp1_H_3day_abs_return', 'comp2_H_3day_abs_return','delta_3day',
+                                         'comp1_H_5day_abs_return', 'comp2_H_5day_abs_return','delta_5day']]
             
             context = {'data': dislocations.to_dict(orient='records')}
             return Response(context)
