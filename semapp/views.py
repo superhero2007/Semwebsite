@@ -25,6 +25,7 @@ EnterShort = 0.43
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
+
     def get(self, request, format=None):
         ah = pd.read_hdf(os.path.join(DataDir, 'account_history.hdf'), 'table')
         ah['Portfolio_daily_return'] = ah.PnlReturn
@@ -101,8 +102,9 @@ class TradingView(GroupRequiredMixin, APIView):
         return drawdown, drawdown.max(), duration.max()
 
 
-class TradingExposuresView(GroupRequiredMixin,APIView):
+class TradingExposuresView(GroupRequiredMixin, APIView):
     group_required = ['trading']
+
     def get(self, request, format=None):
         ## ticker matching doesn't work well. Needs to be converted to CUSIP
         pos = pd.read_hdf(os.path.join(DataDir, 'nav_portfolio.hdf'), 'table')
@@ -172,8 +174,9 @@ class SignalsSecIndView(APIView):
 class SignalsSectorTableView(APIView):
     def post(self, request, format=None):
         sector = request.data['sector']
-        filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        signals = pd.read_hdf(filepath, 'table', where='zacks_x_sector_desc=="%s"' % sector)
+        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
+        signals = pd.read_hdf(filepath, 'table')  # , where='zacks_x_sector_desc=="%s"' % sector)
+        signals = signals[signals.zacks_x_sector_desc == sector]
         # build context
         context = {'data': signals.to_dict(orient='records')}
 
@@ -183,8 +186,9 @@ class SignalsSectorTableView(APIView):
 class SignalsIndustryTableView(APIView):
     def post(self, request, format=None):
         industry = request.data['industry']
-        filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        signals = pd.read_hdf(filepath, 'table', where='zacks_m_ind_desc=="%s"' % industry)
+        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
+        signals = pd.read_hdf(filepath, 'table')  # , where='zacks_m_ind_desc=="%s"' % industry)
+        signals = signals[signals.zacks_m_ind_desc == industry]
         # build context
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)
@@ -209,43 +213,53 @@ class SignalsTickerView(APIView):
 
         return Response(context)
 
+
 class CorrelationView(APIView):
-    def get(self, request, aggregation, lookback, corr_threshold, graph=True, format=None):
+    def post(self, request, format=None):
+        aggregation = request.data['aggregation']
+        lookback = request.data['lookback']
+        corr_threshold = request.data['corr_threshold']
+        graph = request.data['graph']
         if not graph:
-            dislocations = pd.read_csv(DataDir+'/correlation_network_files/dislocations_'+str(aggregation)+'minute_' + lookback + '_lookback.csv')
-            dislocations = dislocations[dislocations.weight>=corr_threshold].reset_index(drop=True)
+            dislocations = pd.read_csv(DataDir + '/correlation_network_files/dislocations_' + str(
+                aggregation) + 'minute_' + lookback + '_lookback.csv')
+            dislocations = dislocations[dislocations.weight >= corr_threshold].reset_index(drop=True)
 
             dislocations = dislocations[['ticker1', 'ticker2', 'weight',
-                                         'comp1_H_1day_abs_return', 'comp2_H_1day_abs_return','delta_1day',
-                                         'comp1_H_3day_abs_return', 'comp2_H_3day_abs_return','delta_3day',
-                                         'comp1_H_5day_abs_return', 'comp2_H_5day_abs_return','delta_5day']]
-            
+                                         'comp1_H_1day_abs_return', 'comp2_H_1day_abs_return', 'delta_1day',
+                                         'comp1_H_3day_abs_return', 'comp2_H_3day_abs_return', 'delta_3day',
+                                         'comp1_H_5day_abs_return', 'comp2_H_5day_abs_return', 'delta_5day']]
+
             context = {'data': dislocations.to_dict(orient='records')}
         else:
-            df_corrmat = pd.read_csv(DataDir+'/correlation_network_files/corr_matrix_'+str(aggregation)+'minute_' + lookback + '_lookback.csv').set_index(keys=['Unnamed: 0'], drop=True)
-            df_nodes = pd.read_csv(DataDir+'/correlation_network_files/node_info.csv')
+            df_corrmat = pd.read_csv(DataDir + '/correlation_network_files/corr_matrix_' + str(
+                aggregation) + 'minute_' + lookback + '_lookback.csv').set_index(keys=['Unnamed: 0'], drop=True)
+            df_nodes = pd.read_csv(DataDir + '/correlation_network_files/node_info.csv')
 
-            node_list = pd.DataFrame(df_corrmat.index.tolist()).reset_index(drop=False).rename(columns={'index':'node_id',0:'ticker'})
+            node_list = pd.DataFrame(df_corrmat.index.tolist()).reset_index(drop=False).rename(
+                columns={'index': 'node_id', 0: 'ticker'})
 
             df_list = df_corrmat.unstack()
 
             df_list = pd.DataFrame(df_list, columns=['weight'])
-            df_list.index.names = ['ticker1','ticker2']
-            df_list = df_list.reset_index(drop=False)    
+            df_list.index.names = ['ticker1', 'ticker2']
+            df_list = df_list.reset_index(drop=False)
 
-            df_list = df_list[df_list.weight!=1].copy()
+            df_list = df_list[df_list.weight != 1].copy()
 
-            df_list = pd.merge(df_list, node_list, left_on=['ticker1'], right_on=['ticker'], how='outer').drop(labels=['ticker1','ticker'], axis=1).rename(columns={'node_id':'node1'})
-            df_list = pd.merge(df_list, node_list, left_on=['ticker2'], right_on=['ticker'], how='outer').drop(labels=['ticker2','ticker'], axis=1).rename(columns={'node_id':'node2'})
-            df_list = df_list[['node1','node2','weight']].copy()
+            df_list = pd.merge(df_list, node_list, left_on=['ticker1'], right_on=['ticker'], how='outer').drop(
+                labels=['ticker1', 'ticker'], axis=1).rename(columns={'node_id': 'node1'})
+            df_list = pd.merge(df_list, node_list, left_on=['ticker2'], right_on=['ticker'], how='outer').drop(
+                labels=['ticker2', 'ticker'], axis=1).rename(columns={'node_id': 'node2'})
+            df_list = df_list[['node1', 'node2', 'weight']].copy()
 
-            df_list = df_list[(df_list.weight>=corr_threshold) | (df_list.weight<=-1*corr_threshold)].copy()
+            df_list = df_list[(df_list.weight >= corr_threshold) | (df_list.weight <= -1 * corr_threshold)].copy()
 
-            edge_list = df_list[['node1','node2']].values.tolist()
+            edge_list = df_list[['node1', 'node2']].values.tolist()
 
             g = igraph.Graph()
 
-            g.add_vertices(node_list.node_id.max()+1)
+            g.add_vertices(node_list.node_id.max() + 1)
             g.add_edges(edge_list)
             weight_list = [abs(i) for i in df_list.weight.tolist()]
             g.es['weight'] = weight_list
@@ -254,14 +268,17 @@ class CorrelationView(APIView):
             mst_edges_list = [g.get_edgelist()[i] for i in mst_edge_ids]
             mst_edges_weights = [g.es['weight'][i] for i in mst_edge_ids]
 
-            mst_edges = pd.DataFrame(mst_edges_list, columns=['node1','node2'])
-            mst_edges = pd.merge(mst_edges, pd.DataFrame(mst_edges_weights, columns=['weight']), left_index=True, right_index=True)
+            mst_edges = pd.DataFrame(mst_edges_list, columns=['node1', 'node2'])
+            mst_edges = pd.merge(mst_edges, pd.DataFrame(mst_edges_weights, columns=['weight']), left_index=True,
+                                 right_index=True)
 
-            mst_edges = pd.merge(mst_edges, node_list, left_on='node1', right_on='node_id').drop(labels=['node_id','node1'], axis=1)
-            mst_edges = pd.merge(mst_edges, node_list, left_on='node2', right_on='node_id').drop(labels=['node_id','node2'], axis=1)
+            mst_edges = pd.merge(mst_edges, node_list, left_on='node1', right_on='node_id').drop(
+                labels=['node_id', 'node1'], axis=1)
+            mst_edges = pd.merge(mst_edges, node_list, left_on='node2', right_on='node_id').drop(
+                labels=['node_id', 'node2'], axis=1)
 
-            mst_edges = mst_edges.rename(columns={'ticker_x':'ticker1','ticker_y':'ticker2'})
-            mst_edges = mst_edges[['ticker1','ticker2','weight']].copy()
+            mst_edges = mst_edges.rename(columns={'ticker_x': 'ticker1', 'ticker_y': 'ticker2'})
+            mst_edges = mst_edges[['ticker1', 'ticker2', 'weight']].copy()
 
             # mst_edges = pd.merge(mst_edges, df_nodes, left_on='ticker1', right_on='ticker').rename(columns={'comp_name':'comp_name1','Sector':'comp1_sector','Industry':'comp1_industry','Industry Group':'comp1_industry_group'}).drop(labels=['ticker'], axis=1)
 
@@ -273,80 +290,81 @@ class CorrelationView(APIView):
             # mst_edges.to_csv('./sp500_mst_edges_minute.csv', index=False)
             # mst_nodes.to_csv('./sp500_mst_nodes_minute.csv', index=False)
 
-            nodes,edges = self.create_graph_data(mst_nodes,mst_edges)
-            context = {'nodes':nodes.to_dict(orient='records'),
-                       'edges':edges.to_dict(orient='records')}
-            
+            nodes, edges = self.create_graph_data(mst_nodes, mst_edges)
+            context = {'nodes': nodes.to_dict(orient='records'),
+                       'edges': edges.to_dict(orient='records')}
+
         return Response(context)
 
-        
-    def create_graph_data(self,nodes,edges):
-        nodes = nodes.drop('Industry Group',axis=1)
-        nodes = nodes.rename(columns={'ticker':'label','comp_name':'name'})
-        nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s'%(x['name'],x.Sector,x.Industry),axis=1)
-        nodes['color'] = 'LightBlue' #nodes.Sector.map(colors)
-        nodes['x'] = 1 
+    def create_graph_data(self, nodes, edges):
+        nodes = nodes.drop('Industry Group', axis=1)
+        nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name'})
+        nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s' % (x['name'], x.Sector, x.Industry),
+                                     axis=1)
+        nodes['color'] = 'LightBlue'  # nodes.Sector.map(colors)
+        nodes['x'] = 1
         nodes['y'] = nodes['x']
         nodes['id'] = nodes.index + 1
         nodes['radius'] = 10
-        nodes['color'] = nodes.color.apply(lambda x: {'background':x})
+        nodes['color'] = nodes.color.apply(lambda x: {'background': x})
 
         edges['from'] = edges.ticker1.map(nodes.set_index('label')['id'])
         edges['to'] = edges.ticker2.map(nodes.set_index('label')['id'])
-        edges = edges[['from','to','weight']]
-        edges.columns = ['from','to','title']
+        edges = edges[['from', 'to', 'weight']]
+        edges.columns = ['from', 'to', 'title']
         edges.title = edges.title.round(2)
         edges['width'] = edges.title * 10
         edges['id'] = edges.index + 1
         edges['color'] = 'black'
-        edges['color'] = edges.color.apply(lambda x: {'color':x})
+        edges['color'] = edges.color.apply(lambda x: {'color': x})
 
-        return (nodes,edges)
+        return (nodes, edges)
 
 
 class NetworkView(APIView):
     def get(self, request, format=None):
-        colors = {"Computer and Technology":"LightBlue",
-                            "Medical":"PaleGoldenRod",
-                            "Transportation":"Chocolate",
-                            "Business Services":"Crimson",
-                            "Utilities":"Lavender",
-                            "Finance":"Wheat",
-                            "Industrial PRODUCTS":"GreenYellow",
-                            "Multi-Sector Conglomerates":"GoldenRod",
-                            "Auto-Tires-Trucks":"WhiteSmoke",
-                            "Construction":"LightSlateGray",
-                            "Oils-Energy":"Lime",
-                            "Basic Materials":"Magenta",
-                            "Retail-Wholesale":"Gold",
-                            "Consumer Staples":"Orange",
-                            "Aerospace":"Peru",
-                            "Consumer Discretionary":"MintCream"}
+        colors = {"Computer and Technology": "LightBlue",
+                  "Medical": "PaleGoldenRod",
+                  "Transportation": "Chocolate",
+                  "Business Services": "Crimson",
+                  "Utilities": "Lavender",
+                  "Finance": "Wheat",
+                  "Industrial PRODUCTS": "GreenYellow",
+                  "Multi-Sector Conglomerates": "GoldenRod",
+                  "Auto-Tires-Trucks": "WhiteSmoke",
+                  "Construction": "LightSlateGray",
+                  "Oils-Energy": "Lime",
+                  "Basic Materials": "Magenta",
+                  "Retail-Wholesale": "Gold",
+                  "Consumer Staples": "Orange",
+                  "Aerospace": "Peru",
+                  "Consumer Discretionary": "MintCream"}
 
-        nodes = pd.read_csv(DataDir+'/sp500_mst_nodes.csv')
-        nodes = nodes.drop('zacks_x_ind_desc',axis=1)
-        nodes = nodes.rename(columns={'ticker':'label','comp_name':'name','zacks_x_sector_desc':'Sector','zacks_m_ind_desc':'industry'})
-        nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s'%(x['name'],x.Sector,x.industry),axis=1)
+        nodes = pd.read_csv(DataDir + '/sp500_mst_nodes.csv')
+        nodes = nodes.drop('zacks_x_ind_desc', axis=1)
+        nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name', 'zacks_x_sector_desc': 'Sector',
+                                      'zacks_m_ind_desc': 'industry'})
+        nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s' % (x['name'], x.Sector, x.industry),
+                                     axis=1)
         nodes['color'] = nodes.Sector.map(colors)
-        nodes['x'] = 1 
+        nodes['x'] = 1
         nodes['y'] = nodes['x']
-        nodes['id'] = nodes.index + 1 
+        nodes['id'] = nodes.index + 1
         nodes['radius'] = 10
-        nodes['color'] = nodes.color.apply(lambda x: {'background':x})
+        nodes['color'] = nodes.color.apply(lambda x: {'background': x})
 
-        edges = pd.read_csv(DataDir+'/sp500_mst_edges.csv')
+        edges = pd.read_csv(DataDir + '/sp500_mst_edges.csv')
         edges['from'] = edges.ticker1.map(nodes.set_index('label')['id'])
         edges['to'] = edges.ticker2.map(nodes.set_index('label')['id'])
-        edges = edges[['from','to','weight']]
-        edges.columns = ['from','to','title']
+        edges = edges[['from', 'to', 'weight']]
+        edges.columns = ['from', 'to', 'title']
         edges.title = edges.title.round(2)
         edges['width'] = edges.title * 10
         edges['id'] = edges.index + 1
         edges['color'] = 'black'
-        edges['color'] = edges.color.apply(lambda x: {'color':x})
+        edges['color'] = edges.color.apply(lambda x: {'color': x})
 
         context = {'my_nodes': nodes.to_dict(orient='records'),
-                'my_edges': edges.to_dict(orient='records')}
+                   'my_edges': edges.to_dict(orient='records')}
 
         return Response(context)
-

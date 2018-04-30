@@ -5,7 +5,7 @@
 (function () {
     'use strict';
 
-    angular.module('BlurAdmin.main.dashboard.correlation.table', [])
+    angular.module('BlurAdmin.main.dashboard.correlation.table', ['ui.select', 'ngSanitize'])
         .config(routeConfig);
 
     /** @ngInject */
@@ -18,7 +18,7 @@
                 title: 'Table',
                 sidebarMeta: {
                     icon: '',
-                    order: 200,
+                    order: 100,
                 },
             });
     }
@@ -26,8 +26,13 @@
     angular.module('BlurAdmin.main.dashboard.correlation.table')
         .factory('TableService', function ($http) {
             return {
-                getData: function () {
-                    return $http.get('/api/Network').then(function (result) {
+                getData: function (barSelectedItem, loopbackSelectedItem, correlation) {
+                    return $http.post('api/Correlation/View/', {
+                        aggregation: barSelectedItem,
+                        lookback: loopbackSelectedItem,
+                        corr_threshold: correlation,
+                        graph: 0
+                    }).then(function (result) {
                         return result.data
                     });
                 }
@@ -35,14 +40,30 @@
         });
 
     angular.module('BlurAdmin.main.dashboard.correlation.table')
-        .controller('DailyController', function ($scope, $timeout, DailyService) {
-            $scope.standardItem = {};
-            $scope.standardSelectItems = [
-                {label: 'Option 1', value: 1},
-                {label: 'Option 2', value: 2},
-                {label: 'Option 3', value: 3},
-                {label: 'Option 4', value: 4}
+        .controller('TableController', function ($scope, $timeout, TableService) {
+            $scope.barSelectedItem = {};
+            $scope.barSizeItems = [
+                {label: '1 Minutes', value: 1},
+                {label: '5 Minutes', value: 5},
+                {label: '15 Minutes', value: 15},
+                {label: '30 Minutes', value: 30},
+                {label: '60 Minutes', value: 60}
             ];
+            $scope.filter = {
+                correlation: 0
+            };
+            $scope.loopbackSelectedItem = {};
+            $scope.loopbackItems = [
+                {label: '1 Week', value: '1week'},
+                {label: '1 Month', value: '1month'},
+                {label: '1 Qtr', value: '1qtr'}
+            ];
+            $scope.tableData = [];
+            $scope.filterData = function () {
+                TableService.getData($scope.barSelectedItem.selected.value, $scope.loopbackSelectedItem.selected.value, $scope.filter.correlation).then(function (data) {
+                    $scope.tableData = data.data;
+                });
+            };
         });
 
 })();

@@ -27,7 +27,7 @@
     .factory('DailyService', function($http) {
       return {
         getData: function () {
-          return $http.get('/api/Network').then(function(result) {
+          return $http.get('/api/Correlation/Daily').then(function(result) {
             return result.data
           });
         }
@@ -37,12 +37,10 @@
   angular.module('BlurAdmin.main.dashboard.correlation.daily')
     .controller('DailyController', function($scope, $timeout, DailyService) {
       DailyService.getData().then(function(data) {
-          console.log(data)
         $scope.my_nodes = data.my_nodes;
         $scope.my_edges = data.my_edges;
         startup_network()
       });
-
 
       $scope.empty_edges = null;
       $scope.edges_delay_var = 0;
