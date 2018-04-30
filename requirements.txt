@@ -10,3 +10,4 @@ pytz==2018.4
 scipy==1.0.1
 six==1.11.0
 tables==3.4.2
+python-igraph==0.7.1.post6
