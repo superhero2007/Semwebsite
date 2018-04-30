@@ -1,0 +1,139 @@
+import sys,os
+import numpy as np
+import pandas as pd
+import datetime,time
+import logging
+from semutils.logging import setup_logger
+setup_logger('download_data.log')
+
+from semutils.db_access import Access_SQL_DB, Access_SQL_Source
+from sqlalchemy import select,Table, Column
+DataDir = 'data'
+MySQL_Server = os.environ.get('MySQL_Server')
+
+EnterLong = 0.55
+EnterShort = 0.45
+
+def download_sec_master_and_pricing(sql_source):
+    #securities master
+    logging.info('Downloading trading securities master')
+    sm = sql_source.get_sec_master()
+    sm.to_hdf(os.path.join(DataDir,'sec_master.hdf'),'table')
+
+    #benchmarks 
+    logging.info('Downloading benchmark data')
+    benchmarks = [('SP500','S&P5'),('SP400','SPMC'),('SP600','S&P6')]
+    for b,m_ticker in benchmarks:
+        b_data = sql_source.get_source_eod_data(m_ticker = m_ticker,vendor='EODData')
+        b_data.to_hdf(os.path.join(DataDir,b+'.hdf'),'table')
+
+    # #prices
+    # logging.info('Downloading pricing data')
+    # cols = ['sec_id','m_ticker','data_date','adj_close','close']
+    # pricesT = Table('eod_data_source', sql_source.META, autoload=True)
+    # filepath = os.path.join(DataDir,'qm_eod_source.hdf')
+
+    # if os.path.exists(filepath):
+    #     prices = pd.read_hdf(filepath,'table')
+    #     max_date = prices.data_date.max()
+    #     df = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)&(pricesT.c.data_data>max_date)),sql_source.CONN)
+    #     prices = pd.concat([prices,df],ignore_index=True)
+    # else:
+    #     prices = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)),sql_source.CONN)
+
+    # prices = prices[prices.data_date >= '2003-01-01']
+    # prices.to_hdf(filepath,'table',format='table',data_columns=['data_date','sec_id'],mode='w')
+
+
+def download_portfolio_data(sql_semoms): 
+    #account history
+    logging.info('Downloading trading account history')
+    ah = pd.read_sql_table('account_history',sql_semoms.CONN)
+    ah.to_hdf(os.path.join(DataDir,'account_history.hdf'),'table')
+
+    #account positions
+    logging.info('Downloading trading account positions')
+    pos = pd.read_sql_table('nav_portfolio',sql_semoms.CONN)
+    pos.to_hdf(os.path.join(DataDir,'nav_portfolio.hdf'),'table')
+
+
+def download_sec_ownership_data(sql_source): 
+    logging.info('Downloading sec_forms_ownership_source')
+    cols = ['SECAccNumber','IssuerCIK','FilerCIK','URL','AcceptedDate','FilerName','InsiderTitle','Director','TenPercentOwner',
+            'TransType','DollarValue','valid_purchase','valid_sale','FilingDate']
+    formsT = Table('sec_forms_ownership_source', sql_source.META, autoload=True)
+    filepath = os.path.join(DataDir,'sec_forms_ownership_source.hdf')
+
+    if os.path.exists(filepath):
+        forms = pd.read_hdf(filepath,'table')
+        max_date = forms.FilingDate.max()
+        df = pd.read_sql(select([formsT.c[x] for x in cols]).where(forms.c.FilingDate>max_date),sql_source.CONN)
+        forms = pd.concat([forms,df],ignore_index=True)
+    else:
+        forms = pd.read_sql(select([formsT.c[x] for x in cols]),sql_source.CONN)
+
+    forms.to_hdf(filepath,'table',format='table',data_columns=['IssuerCIK','FilingDate'],mode='w')
+
+def download_equities_signal_data(sql_equities): 
+    logging.info('Downloading equities_signal_data')
+    # full signals file
+    filepath_full = os.path.join(DataDir,'equities_signals_full.hdf')
+    if os.path.exists(filepath_full):
+        signalsT = Table('V_website',sql_equities.META,autoload=True)
+        signals = pd.read_hdf(filepath_ful,'table',columns=['data_date'])
+        max_date = signals.data_date.max()
+        df = pd.read_sql(signalsT.select().where(signalsT.c.data_date>max_date),sql_equities.CONN)
+        signals = pd.concat([signals,df],ignore_index=True)
+    else:
+        signals = pd.read_sql_table('V_website',sql_equities.CONN)
+
+    signals['Long'] = (signals.SignalConfidence > EnterLong).astype(int)
+    signals['Short'] = (signals.SignalConfidence < EnterShort).astype(int)
+    signals['Neutral'] = 1-(signals['Long'] | signals['Short'])
+    signals['SignalDirection'] = signals.apply(lambda x: 'Long' if x.Long==1 else 'Short' if x.Short==1 else 'Neutral',axis=1)
+        
+    signals.to_hdf(filepath_full,'table',format='table',data_columns=['data_date','ticker','zacks_x_sector_desc','zacks_m_ind_desc'],mode='w')
+    max_date = signals.data_date.max()
+
+    # write latest signal file
+    filepath_latest = os.path.join(DataDir,'equities_signals_latest.hdf')
+    latest = signals[signals.data_date == max_date]
+    latest.to_hdf(filepath_latest,'table')
+    
+    # sec ind signals file
+    filepath_sec_ind = os.path.join(DataDir,'equities_signals_sec_ind.hdf')
+    
+    ind = signals.groupby(['data_date','zacks_x_sector_desc','zacks_m_ind_desc']).sum()[['Long','Short','Neutral']]
+    ind['Net'] = ind['Long'] / (ind['Long']+ind['Short'])
+    ind['Net - 1wk delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(5)
+    ind['Net - 1mo delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(20)
+    ind.reset_index(level = ['zacks_x_sector_desc','zacks_m_ind_desc'], drop=False, inplace=True)
+
+    sec = signals.groupby(['data_date','zacks_x_sector_desc']).sum()[['Long','Short','Neutral']]
+    sec['Net'] = sec['Long'] / (sec['Long']+sec['Short'])
+    sec['Net - 1wk delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
+    sec['Net - 1mo delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
+
+    sec.reset_index(level = ['zacks_x_sector_desc'], drop=False, inplace=True)
+    sec['zacks_m_ind_desc'] ='All'
+
+    sec_ind = pd.concat([ind.loc[max_date],sec.loc[max_date]],ignore_index=True)
+    sec_ind = sec_ind.fillna(0)
+    sec_ind.to_hdf(filepath_sec_ind,'table')
+
+    
+if __name__ == '__main__':
+    # connect to sql 
+    MySQL_Server = 'gc_mysql1'
+    sql_source = Access_SQL_Source(MySQL_Server)
+    sql_semoms = Access_SQL_DB(MySQL_Server,db='semoms')
+    sql_equities = Access_SQL_DB(MySQL_Server,db = 'equity_models')
+
+    download_sec_master_and_pricing(sql_source)
+    download_portfolio_data(sql_semoms)
+    #download_sec_ownership_data(sql_source)
+    #download_equities_signal_data(sql_equities)
+
+    sql_semoms.close_connection()
+    sql_source.close_connection()
+    sql_equities.close_connection()
