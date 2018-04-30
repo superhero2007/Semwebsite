@@ -1,3 +1,5 @@
+from .mixins import GroupRequiredMixin
+
 # Create your views here.
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -21,7 +23,8 @@ EnterLong = 0.57
 EnterShort = 0.43
 
 
-class TradingView(APIView):
+class TradingView(GroupRequiredMixin, APIView):
+    group_required = ['trading']
     def get(self, request, format=None):
         ah = pd.read_hdf(os.path.join(DataDir, 'account_history.hdf'), 'table')
         ah['Portfolio_daily_return'] = ah.PnlReturn
@@ -98,7 +101,8 @@ class TradingView(APIView):
         return drawdown, drawdown.max(), duration.max()
 
 
-class TradingExposuresView(APIView):
+class TradingExposuresView(GroupRequiredMixin,APIView):
+    group_required = ['trading']
     def get(self, request, format=None):
         ## ticker matching doesn't work well. Needs to be converted to CUSIP
         pos = pd.read_hdf(os.path.join(DataDir, 'nav_portfolio.hdf'), 'table')
@@ -198,7 +202,7 @@ class SignalsTickerView(APIView):
 
         ## Check if stacked signal data exists
         if (not (len(signals))):
-            return ({'data': None})
+            return Response({'data': None})
 
         # build context
         context = {'data': signals.to_dict(orient='records')}

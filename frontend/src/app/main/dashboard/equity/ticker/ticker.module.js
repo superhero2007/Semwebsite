@@ -27,7 +27,7 @@
     }
 
     function amChartConfig(baConfigProvider) {
-        const layoutColors = baConfigProvider.colors;
+        var layoutColors = baConfigProvider.colors;
         AmCharts.themes.blur = {
 
             themeName: "blur",
@@ -240,7 +240,7 @@
 
     angular.module('BlurAdmin.main.dashboard.equity.ticker')
         .controller('TickerController', function ($scope, $stateParams, TickerService, baConfig) {
-            const layoutColors = baConfig.colors;
+            var layoutColors = baConfig.colors;
             console.log(layoutColors);
             $scope.filterParameter = $stateParams.obj;
             $scope.filter = {
@@ -249,7 +249,7 @@
             $scope.showChart = function () {
                 TickerService.getData($scope.filter.ticker).then(function (data) {
                     $scope.tickerData = data.data;
-                    for (let i = 0; i < $scope.tickerData.length; i++) {
+                    for (var i = 0; i < $scope.tickerData.length; i++) {
                         $scope.tickerData[i].max = 1;
                         $scope.tickerData[i].long = 0.65;
                         $scope.tickerData[i].short = 0.45;
