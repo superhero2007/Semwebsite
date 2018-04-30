@@ -7,7 +7,7 @@
 
   angular.module('BlurAdmin.main.dashboard', [
     'BlurAdmin.main.dashboard.trading',
-    'BlurAdmin.main.dashboard.network',
+    'BlurAdmin.main.dashboard.correlation',
     'BlurAdmin.main.dashboard.equity'
   ])
     .config(routeConfig);
