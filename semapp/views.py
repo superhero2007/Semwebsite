@@ -209,6 +209,72 @@ class SignalsTickerView(APIView):
 
         return Response(context)
 
+class CorrelationView(APIView):
+    def get(self, request, aggregation, lookback, corr_threshold, graph=True, format=None):
+        if not graph:
+            dislocations = pd.read_csv(DataDir+'/correlation_network_files/dislocations_'+str(aggregation)+'minute_' + lookback + '_lookback.csv')
+            dislocations = dislocations[dislocations.weight>=corr_threshold].reset_index(drop=True)
+
+            df['delta_1day'] = df.comp1_F_1day_abs_return - df.comp2_F_1day_abs_return
+            df['delta_2day'] = df.comp1_F_1day_abs_return - df.comp2_F_1day_abs_return
+
+            
+            context = {'data': dislocations.to_dict(orient='records')}
+            return Response(context)
+
+        df_corrmat = pd.read_csv('./correlation_network_files/corr_matrix_'+str(aggregation)+'minute_' + lookback + '_lookback.csv').set_index(keys=['Unnamed: 0'], drop=True)
+        df_nodes = pd.read_csv('./correlation_network_files/node_info.csv')
+
+        node_list = pd.DataFrame(df_corrmat.index.tolist()).reset_index(drop=False).rename(columns={'index':'node_id',0:'ticker'})
+
+        df_list = df_corrmat.unstack()
+
+        df_list = pd.DataFrame(df_list, columns=['weight'])
+        df_list.index.names = ['ticker1','ticker2']
+        df_list = df_list.reset_index(drop=False)    
+
+        df_list = df_list[df_list.weight!=1].copy()
+
+        df_list = pd.merge(df_list, node_list, left_on=['ticker1'], right_on=['ticker'], how='outer').drop(labels=['ticker1','ticker'], axis=1).rename(columns={'node_id':'node1'})
+        df_list = pd.merge(df_list, node_list, left_on=['ticker2'], right_on=['ticker'], how='outer').drop(labels=['ticker2','ticker'], axis=1).rename(columns={'node_id':'node2'})
+        df_list = df_list[['node1','node2','weight']].copy()
+
+        df_list = df_list[(df_list.weight>=corr_threshold) | (df_list.weight<=-1*corr_threshold)].copy()
+
+        edge_list = df_list[['node1','node2']].values.tolist()
+
+        g = igraph.Graph()
+
+        g.add_vertices(node_list.node_id.max()+1)
+        g.add_edges(edge_list)
+        weight_list = [abs(i) for i in df_list.weight.tolist()]
+        g.es['weight'] = weight_list
+
+        mst_edge_ids = g.spanning_tree(weights=weight_list, return_tree=False)
+        mst_edges_list = [g.get_edgelist()[i] for i in mst_edge_ids]
+        mst_edges_weights = [g.es['weight'][i] for i in mst_edge_ids]
+
+        mst_edges = pd.DataFrame(mst_edges_list, columns=['node1','node2'])
+        mst_edges = pd.merge(mst_edges, pd.DataFrame(mst_edges_weights, columns=['weight']), left_index=True, right_index=True)
+
+        mst_edges = pd.merge(mst_edges, node_list, left_on='node1', right_on='node_id').drop(labels=['node_id','node1'], axis=1)
+        mst_edges = pd.merge(mst_edges, node_list, left_on='node2', right_on='node_id').drop(labels=['node_id','node2'], axis=1)
+
+        mst_edges = mst_edges.rename(columns={'ticker_x':'ticker1','ticker_y':'ticker2'})
+        mst_edges = mst_edges[['ticker1','ticker2','weight']].copy()
+
+        # mst_edges = pd.merge(mst_edges, df_nodes, left_on='ticker1', right_on='ticker').rename(columns={'comp_name':'comp_name1','Sector':'comp1_sector','Industry':'comp1_industry','Industry Group':'comp1_industry_group'}).drop(labels=['ticker'], axis=1)
+
+        # mst_edges = pd.merge(mst_edges, df_nodes, left_on='ticker2', right_on='ticker').rename(columns={'comp_name':'comp_name2','Sector':'comp2_sector','Industry':'comp2_industry','Industry Group':'comp2_industry_group'}).drop(labels=['ticker'], axis=1)
+
+        mst_nodes = list(set(mst_edges.ticker1.unique().tolist() + mst_edges.ticker2.unique().tolist()))
+        mst_nodes = df_nodes[df_nodes.ticker.isin(mst_nodes)].reset_index(drop=True)
+
+        # mst_edges.to_csv('./sp500_mst_edges_minute.csv', index=False)
+        # mst_nodes.to_csv('./sp500_mst_nodes_minute.csv', index=False)
+
+        return([mst_edges,mst_nodes])
+
 
 class NetworkView(APIView):
     def get(self, request, format=None):

@@ -121,6 +121,120 @@ def download_equities_signal_data(sql_equities):
     sec_ind = sec_ind.fillna(0)
     sec_ind.to_hdf(filepath_sec_ind,'table')
 
+def prep_correlation_data ():
+    ### Unzip downloaded files
+    dest = '/home/tony/projects/networks/datasets/sp500_minute_dataset.zip'
+    zipfile = zp.ZipFile(dest, 'r')
+    zipfile.extractall('/home/tony/projects/networks/datasets/')
+    zipfile.close()
+
+    x_list = []
+    yz_list = []
+    for year in [2018]:
+        x_df = pd.read_hdf('/home/shared/test/vendor_data/axioma/2000_2018/' + str(year) + '/Composite-ETF-US_cst.hdf')
+        y_df = pd.read_hdf('/home/shared/test/vendor_data/axioma/2000_2018/' + str(year) + '/Composite-ETF-US_idm.hdf').drop(labels=['Currency'], axis=1)
+        z_df = pd.read_hdf('/home/shared/test/vendor_data/axioma/2000_2018/' + str(year) + '/Composite-ETF-US_att.hdf')
+
+        yz_df = pd.merge(y_df, z_df, on=['data_date','AxiomaID'])
+        
+        x_list.append(x_df)
+        yz_list.append(y_df)
+
+    x_df = pd.concat(x_list, ignore_index=True)
+    yz_df = pd.concat(yz_list, ignore_index=True)
+
+    sp500_ax_list = x_df[(x_df['Composite AxiomaID']=='37P4NKR33') & (x_df['data_date']=='2018-03-26')]['Constituent AxiomaID'].tolist()
+
+    ax_prices = pd.read_hdf('/home/shared/test/vendor_data/axioma/master.hdf',key='table')
+    ax_prices.sort_values(by=['data_date','AxiomaID'], inplace=True)
+
+    ax_prices = ax_prices[ax_prices.data_date=='2018-03-26'].copy()
+    ax_prices = ax_prices[ax_prices.AxiomaID.isin(sp500_ax_list)].copy()
+
+    ax_prices = ax_prices[ax_prices.AxiomaID.isin(sp500_ax_list)]
+    # ax_prices.to_csv('./sp500_list_axioma.csv')
+    # ax_prices = pd.read_csv('./sp500_list_axioma.csv').drop(labels=['Unnamed: 0'], axis=1)
+
+
+    sp500_ticker_list = ax_prices['Ticker'].tolist()
+
+    y_df = ax_prices[['Ticker','Company Name','Industry','Industry Group','Sector']].copy()
+    y_df.rename(columns={'Ticker':'ticker','Company Name':'comp_name'}, inplace=True)
+
+    y_df.to_csv('./correlation_network_files/node_info.csv', index=False)
+
+    df = pd.read_csv('./datasets/dataset.csv', index_col=0, header=[0,1]).sort_index(axis=1).reset_index(drop=False)
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index(keys=['timestamp'], drop=True, inplace=True)
+
+    df = df.iloc[:,df.columns.get_level_values(1)=='close']
+    df.columns = df.columns.droplevel(1)
+    df.index.name = 'data_date'
+
+    df.sort_index(inplace=True)
+    df.fillna(method='pad', inplace=True)
+    
+    sp500_list = [i for i in sp500_ticker_list if i in df.columns.tolist()]
+    df = df[sp500_list].copy()
+    df.sort_index(inplace=True)
+
+    max_date = df.index.max()
+    max_date = max_date.replace(hour=0, minute=0)
+
+    for aggregation in [1,5,15,30,60]:
+        for lookback in [1,4,12]:
+            if aggregation!=1:
+                df = df.resample(str(aggregation)+'T').last()
+
+            df.dropna(how='all', inplace=True)
+            df.sort_index(inplace=True)
+
+            df = df.pct_change()
+            df = df[df.index>=max_date-pd.DateOffset(weeks=lookback)].copy()
+
+            df_corrmat = df.corr()
+            df_list = df_corrmat.unstack()
+
+            df_list = pd.DataFrame(df_list, columns=['weight'])
+            df_list.index.names = ['ticker1','ticker2']
+            df_list = df_list.reset_index(drop=False)    
+
+            df_list = df_list[df_list.weight!=1].copy()
+
+            df_prices = pd.read_hdf('./datasets/price_data.hdf', key='table')
+            df_prices = df_prices[df_prices.ticker.isin(sp500_ticker_list)][['ticker','data_date','adj_close']].copy()
+            df_prices.sort_values(by=['ticker','data_date'], inplace=True)
+
+            df_prices['adj_close_daily_return'] = df_prices.groupby('ticker')['adj_close'].pct_change()
+
+            for i in [1,2,3,4,5]:
+                df_prices['F_'+str(i)+'day_abs_return'] = df_prices.groupby('ticker')['adj_close'].pct_change(i).shift(-1-i)
+
+            df_prices = df_prices[df_prices.data_date==max_date].drop(labels=['data_date','adj_close'], axis=1).reset_index(drop=True)
+
+            new_df = pd.merge(df_list, df_prices, left_on='ticker1', right_on='ticker').drop(labels=['ticker'], axis=1)
+            new_df.rename(columns={i:'comp1_'+i for i in new_df.filter(regex='F_').columns}, inplace=True)
+            new_df.rename(columns={'adj_close_daily_return':'comp1_adj_close_daily_return'}, inplace=True)
+
+            new_df = pd.merge(new_df, df_prices, left_on='ticker2', right_on='ticker').drop(labels=['ticker'], axis=1)
+            new_df.rename(columns={i:'comp2_'+i for i in new_df.filter(regex='F_').columns if 'comp1_' not in i}, inplace=True)
+            new_df.rename(columns={'adj_close_daily_return':'comp2_adj_close_daily_return'}, inplace=True)
+
+            new_df['delta'] = new_df['comp1_adj_close_daily_return'] - new_df['comp2_adj_close_daily_return']
+
+            if lookback==1:
+                df_corrmat.to_csv('./correlation_network_files/corr_matrix_'+str(aggregation)+'minute_1week_lookback.csv')
+                new_df.to_csv('./correlation_network_files/dislocations_'+str(aggregation)+'minute_1week_lookback.csv', index=False)
+            elif lookback==4:
+                df_corrmat.to_csv('./correlation_network_files/corr_matrix_'+str(aggregation)+'minute_1month_lookback.csv')
+                new_df.to_csv('./correlation_network_files/dislocations_'+str(aggregation)+'minute_1month_lookback.csv', index=False)
+            elif lookback==12:
+                df_corrmat.to_csv('./correlation_network_files/corr_matrix_'+str(aggregation)+'minute_1qtr_lookback.csv')
+                new_df.to_csv('./correlation_network_files/dislocations_'+str(aggregation)+'minute_1qtr_lookback.csv', index=False)
+
+    return()
+    
+    
     
 if __name__ == '__main__':
     # connect to sql 

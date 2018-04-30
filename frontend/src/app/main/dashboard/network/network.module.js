@@ -18,7 +18,7 @@
         title: 'Correlation',
         sidebarMeta: {
           icon: '',
-          order: 100,
+          order: 1,
         },
       });
   }

@@ -19,7 +19,7 @@
         url: '/dashboard',
         templateUrl: 'app/main/dashboard/dashboard.html',
         title: 'Dashboard',
-        redirectTo: 'dashboard.trading.dashboard'
+        redirectTo: 'dashboard.equity.latest'
    	})
   }
 
