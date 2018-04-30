@@ -172,8 +172,9 @@ class SignalsSecIndView(APIView):
 class SignalsSectorTableView(APIView):
     def post(self, request, format=None):
         sector = request.data['sector']
-        filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        signals = pd.read_hdf(filepath, 'table', where='zacks_x_sector_desc=="%s"' % sector)
+        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
+        signals = pd.read_hdf(filepath, 'table')#, where='zacks_x_sector_desc=="%s"' % sector)
+        signals = signals[signals.zacks_x_sector_desc==sector]
         # build context
         context = {'data': signals.to_dict(orient='records')}
 
@@ -183,8 +184,9 @@ class SignalsSectorTableView(APIView):
 class SignalsIndustryTableView(APIView):
     def post(self, request, format=None):
         industry = request.data['industry']
-        filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        signals = pd.read_hdf(filepath, 'table', where='zacks_m_ind_desc=="%s"' % industry)
+        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
+        signals = pd.read_hdf(filepath, 'table')#, where='zacks_m_ind_desc=="%s"' % industry)
+        signals = signals[signals.zacks_m_ind_desc==industry]
         # build context
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)

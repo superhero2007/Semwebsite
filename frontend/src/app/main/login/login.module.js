@@ -74,7 +74,7 @@
                 LoginService.Login($scope.username, $scope.password, function (response) {
                     if (response.success) {
                         LoginService.SetCredentials($scope.username, $scope.password);
-                        $location.path('/dashboard/trading/dashboard');
+                        $location.path('/dashboard/equity/latest');
                     } else {
                         $scope.error = response.message;
                         $scope.dataLoading = false;
