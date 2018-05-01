@@ -156,7 +156,10 @@ class SignalsLatestView(APIView):
     def get(self, request, format=None):
         filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
         signals = pd.read_hdf(filepath, 'table')
+        signals = signals[['data_date','ticker','market_cap','zacks_x_sector_desc','zacks_m_ind_desc','SignalConfidence','SignalDirection']]
+        signals.market_cap.fillna(0,inplace=True)
 
+        signals = signals[signals.zacks_x_sector_desc.notnull()]
         # build context
         context = {'data': signals.to_dict(orient='records')}
 

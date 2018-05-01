@@ -114,13 +114,13 @@ def download_equities_signal_data():
     filepath_sec_ind = os.path.join(DataDir,'equities_signals_sec_ind.hdf')
     
     ind = signals.groupby(['data_date','zacks_x_sector_desc','zacks_m_ind_desc']).sum()[['Long','Short','Neutral']]
-    ind['Net'] = ind['Long'] / (ind['Long']+ind['Short'])
+    ind['Net'] = (ind['Long'] - ind['Short'] / (ind['Long']+ind['Short'])
     ind['Net - 1wk delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(5)
     ind['Net - 1mo delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(20)
     ind.reset_index(level = ['zacks_x_sector_desc','zacks_m_ind_desc'], drop=False, inplace=True)
 
     sec = signals.groupby(['data_date','zacks_x_sector_desc']).sum()[['Long','Short','Neutral']]
-    sec['Net'] = sec['Long'] / (sec['Long']+sec['Short'])
+    sec['Net'] = (sec['Long'] - sec['Short']) / (sec['Long']+sec['Short'])
     sec['Net - 1wk delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
     sec['Net - 1mo delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
 
