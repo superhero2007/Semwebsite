@@ -3,18 +3,22 @@ import numpy as np
 import pandas as pd
 import datetime,time
 import logging
+import traceback
+
 from semutils.logging import setup_logger
 setup_logger('download_data.log')
-
+from semutils.messaging import Slack
 from semutils.db_access import Access_SQL_DB, Access_SQL_Source
 from sqlalchemy import select,Table, Column
-DataDir = 'data'
-MySQL_Server = os.environ.get('MySQL_Server')
+DataDir = 'data_prod'
+RemoteDir = '/home/web/projects/semwebsite/semapp'
 
 EnterLong = 0.55
 EnterShort = 0.45
 
-def download_sec_master_and_pricing(sql_source):
+def download_sec_master_and_pricing():
+    sql_source = Access_SQL_Source(os.environ.get('MySQL_Server'))
+
     #securities master
     logging.info('Downloading trading securities master')
     sm = sql_source.get_sec_master()
@@ -27,25 +31,28 @@ def download_sec_master_and_pricing(sql_source):
         b_data = sql_source.get_source_eod_data(m_ticker = m_ticker,vendor='EODData')
         b_data.to_hdf(os.path.join(DataDir,b+'.hdf'),'table')
 
-    # #prices
-    # logging.info('Downloading pricing data')
-    # cols = ['sec_id','m_ticker','data_date','adj_close','close']
-    # pricesT = Table('eod_data_source', sql_source.META, autoload=True)
-    # filepath = os.path.join(DataDir,'qm_eod_source.hdf')
+    #prices
+    logging.info('Downloading pricing data')
+    cols = ['sec_id','m_ticker','data_date','adj_close','close']
+    pricesT = Table('eod_data_source', sql_source.META, autoload=True)
+    filepath = os.path.join(DataDir,'qm_eod_source.hdf')
 
-    # if os.path.exists(filepath):
-    #     prices = pd.read_hdf(filepath,'table')
-    #     max_date = prices.data_date.max()
-    #     df = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)&(pricesT.c.data_data>max_date)),sql_source.CONN)
-    #     prices = pd.concat([prices,df],ignore_index=True)
-    # else:
-    #     prices = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)),sql_source.CONN)
+    if os.path.exists(filepath):
+        prices = pd.read_hdf(filepath,'table')
+        max_date = prices.data_date.max()
+        df = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)&(pricesT.c.data_data>max_date)),sql_source.CONN)
+        prices = pd.concat([prices,df],ignore_index=True)
+    else:
+        prices = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)),sql_source.CONN)
 
-    # prices = prices[prices.data_date >= '2003-01-01']
-    # prices.to_hdf(filepath,'table',format='table',data_columns=['data_date','sec_id'],mode='w')
+    prices = prices[prices.data_date >= '2003-01-01']
+    prices.to_hdf(filepath,'table',format='table',data_columns=['data_date','sec_id'],mode='w')
+
+    sql_source.close_connection()
 
 
-def download_portfolio_data(sql_semoms): 
+def download_portfolio_data(): 
+    sql_semoms = Access_SQL_DB(os.environ.get('MySQL_Server'),db='semoms')
     #account history
     logging.info('Downloading trading account history')
     ah = pd.read_sql_table('account_history',sql_semoms.CONN)
@@ -55,9 +62,10 @@ def download_portfolio_data(sql_semoms):
     logging.info('Downloading trading account positions')
     pos = pd.read_sql_table('nav_portfolio',sql_semoms.CONN)
     pos.to_hdf(os.path.join(DataDir,'nav_portfolio.hdf'),'table')
+    sql_semoms.close_connection()
 
-
-def download_sec_ownership_data(sql_source): 
+def download_sec_ownership_data(): 
+    sql_source = Access_SQL_Source(os.environ.get('MySQL_Server'))
     logging.info('Downloading sec_forms_ownership_source')
     cols = ['SECAccNumber','IssuerCIK','FilerCIK','URL','AcceptedDate','FilerName','InsiderTitle','Director','TenPercentOwner',
             'TransType','DollarValue','valid_purchase','valid_sale','FilingDate']
@@ -73,8 +81,10 @@ def download_sec_ownership_data(sql_source):
         forms = pd.read_sql(select([formsT.c[x] for x in cols]),sql_source.CONN)
 
     forms.to_hdf(filepath,'table',format='table',data_columns=['IssuerCIK','FilingDate'],mode='w')
+    sql_source.close_connect()
 
-def download_equities_signal_data(sql_equities): 
+def download_equities_signal_data(): 
+    sql_equities = Access_SQL_DB(os.environ.get('MySQL_Server'),db = 'equity_models')
     logging.info('Downloading equities_signal_data')
     # full signals file
     filepath_full = os.path.join(DataDir,'equities_signals_full.hdf')
@@ -120,6 +130,7 @@ def download_equities_signal_data(sql_equities):
     sec_ind = pd.concat([ind.loc[max_date],sec.loc[max_date]],ignore_index=True)
     sec_ind = sec_ind.fillna(0)
     sec_ind.to_hdf(filepath_sec_ind,'table')
+    sql_equities.close_connection()
 
 def prep_correlation_data ():
     ### Unzip downloaded files
@@ -237,17 +248,24 @@ def prep_correlation_data ():
     
     
 if __name__ == '__main__':
-    # connect to sql 
-    MySQL_Server = 'gc_mysql1'
-    sql_source = Access_SQL_Source(MySQL_Server)
-    sql_semoms = Access_SQL_DB(MySQL_Server,db='semoms')
-    sql_equities = Access_SQL_DB(MySQL_Server,db = 'equity_models')
+    functions = [download_sec_master_and_pricing, 
+                 download_portfolio_data,
+                 #download_sec_ownership_data, 
+                 download_equities_signal_data]
 
-    download_sec_master_and_pricing(sql_source)
-    download_portfolio_data(sql_semoms)
-    #download_sec_ownership_data(sql_source)
-    #download_equities_signal_data(sql_equities)
+    functions = []
+    logging.info('Starting website data download')
+    for func in functions:
+        try:
+           func()
+        except:
+            message = 'Website data update: Unable to complete %s function'%func.__name__
+            logging.error(message)
+            logging.error(traceback.format_exc())
 
-    sql_semoms.close_connection()
-    sql_source.close_connection()
-    sql_equities.close_connection()
+            response = Slack().send_slack_message(post_to = 'productionissues', message=message,
+                                                  post_as_username=os.path.basename(__file__))
+
+    logging.info('Copying files to remote')
+    os.system("gcloud compute copy-files %s --project website-200703 web@semwebserver:%s --zone us-central1-a"%(DataDir,RemoteDir))
+
