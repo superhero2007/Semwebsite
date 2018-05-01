@@ -1,4 +1,4 @@
 env
 __pycache__
-db.sqlite3
 semapp/data/correlation_network_files
+.idea/
