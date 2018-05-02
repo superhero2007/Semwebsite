@@ -15,10 +15,10 @@
                 url: '/sector',
                 templateUrl: 'app/main/dashboard/equity/sector/sector.html',
                 controller: 'SectorController',
-                title: 'Sector/Industry',
+                title: 'Sector / Industry',
                 sidebarMeta: {
                     icon: '',
-                    order: 0,
+                    order: 100,
                 },
             })
     }
@@ -74,56 +74,20 @@
             };
             $scope.showSector = function (sector) {
                 SectorService.getSector(sector).then(function (data) {
-                    $scope.filterData = data.data.sort(function (a, b) {
-                        if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return 1;
-                        if (a.zacks_x_sector_desc < b.zacks_x_sector_desc) return -1;
-                        if (a.zacks_m_ind_desc == 'All') return -1;
-                        if (b.zacks_m_ind_desc == 'All') return 1;
-                    });
+                    $scope.rowCollection = data.data;
+                    $scope.filterData = [].concat($scope.rowCollection);
                     $scope.title = sector;
                 })
             };
             $scope.showIndustry = function (industry) {
                 SectorService.getIndustry(industry).then(function (data) {
-                    $scope.filterData = data.data.sort(function (a, b) {
-                        if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return 1;
-                        if (a.zacks_x_sector_desc < b.zacks_x_sector_desc) return -1;
-                        if (a.zacks_m_ind_desc == 'All') return -1;
-                        if (b.zacks_m_ind_desc == 'All') return 1;
-                    });
+                    $scope.rowCollection = data.data;
+                    $scope.filterData = [].concat($scope.rowCollection);
                     $scope.title = industry;
                 })
             };
             $scope.showGraph = function (ticker) {
                 $state.go('dashboard.equity.ticker', {obj: ticker})
             };
-            $scope.sortKey = '';
-            $scope.ref = 1;
-            $scope.setSort = function (sortKey) {
-                $scope.ref = -$scope.ref;
-                if ($scope.sortKey !== sortKey)
-                    $scope.ref = 1;
-                $scope.sortKey = sortKey;
-                $scope.filterData = $scope.filterData.sort(function (a, b) {
-                    var ref = $scope.ref;
-                    if (sortKey === 'ticker') {
-                        if (a.ticker > b.ticker) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'sector') {
-                        if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'industry') {
-                        if (a.zacks_m_ind_desc > b.zacks_m_ind_desc) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'signal') {
-                        if (a.SignalConfidence > b.SignalConfidence) return ref;
-                        else return -ref;
-                    }
-                    return -1;
-                });
-            }
         });
 })();

@@ -15,10 +15,10 @@
         url: '/daily',
         templateUrl: 'app/main/dashboard/correlation/daily/daily.html',
         controller: 'DailyController',
-        title: 'Daily',
+        title: 'Long Term',
         sidebarMeta: {
           icon: '',
-          order: 0,
+          order: 200,
         },
       });
   }

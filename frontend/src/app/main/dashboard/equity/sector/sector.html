@@ -10,24 +10,49 @@
          ba-panel
          ba-panel-class="sector-table"
          ba-panel-title="{{ title }}">
-        <div class="table-responsive">
-            <table class="table">
-                <tr>
-                    <th>Date</th>
-                    <th ng-click="setSort('ticker')">Ticker</th>
+        <div class="horizontal-scroll">
+            <table class="table" st-table="filterData" st-safe-src="rowCollection">
+                <thead>
+                <tr class="sortable ">
+                    <th st-sort="data_date">Date</th>
+                    <th st-sort="ticker">Ticker</th>
                     <th>Market Cap</th>
-                    <th ng-click="setSort('sector')">Sector</th>
-                    <th ng-click="setSort('industry')">Industry</th>
-                    <th ng-click="setSort('signal')">SignalConfidence</th>
+                    <th st-sort="zacks_x_sector_desc">Sector</th>
+                    <th st-sort="zacks_m_ind_desc">Industry</th>
+                    <th st-sort="SignalConfidence">SignalConfidence</th>
                 </tr>
-                <tr ng-repeat='entry in filterData'>
-                    <td>{{ entry.data_date.substr(0, 10) }}</td>
-                    <td class="ticker" ng-click="showGraph(entry.ticker)">{{ entry.ticker }}</td>
-                    <td>{{ (entry.market_cap / 1000000000).toFixed(1) }}B</td>
-                    <td>{{ entry.zacks_x_sector_desc }}</td>
-                    <td>{{ entry.zacks_m_ind_desc }}</td>
-                    <td>{{ entry.SignalConfidence.toFixed(2) }}</td>
+                <tr>
+                    <th><input st-search="data_date" placeholder="Search Date"
+                               class="input-sm form-control search-input"
+                               type="search"/></th>
+                    <th><input st-search="ticker" placeholder="Search Ticker" class="input-sm form-control search-input"
+                               type="search"/></th>
+                    <th><input st-search="market_cap" placeholder="Search Market Cap"
+                               class="input-sm form-control search-input"
+                               type="search"/></th>
+                    <th><input st-search="zacks_x_sector_desc" placeholder="Search Sector"
+                               class="input-sm form-control search-input"
+                               type="search"/></th>
+                    <th><input st-search="zacks_m_ind_desc" placeholder="Search Industry"
+                               class="input-sm form-control search-input"
+                               type="search"/>
+                    </th>
+                    <th><input st-search="SignalConfidence" placeholder="Search SignalConfidence"
+                               class="input-sm form-control search-input"
+                               type="search"/>
+                    </th>
                 </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in filterData">
+                    <td>{{ item.data_date.substr(0, 10) }}</td>
+                    <td class="ticker" ng-click="showGraph(item.ticker)">{{ item.ticker }}</td>
+                    <td>{{ (item.market_cap / 1000000000).toFixed(1) }}B</td>
+                    <td>{{ item.zacks_x_sector_desc }}</td>
+                    <td>{{ item.zacks_m_ind_desc }}</td>
+                    <td>{{ item.SignalConfidence.toFixed(2) }}</td>
+                </tr>
+                </tbody>
             </table>
         </div>
     </div>

@@ -15,10 +15,10 @@
                 url: '/table',
                 templateUrl: 'app/main/dashboard/correlation/table/table.html',
                 controller: 'TableController',
-                title: 'Table',
+                title: 'Dislocation',
                 sidebarMeta: {
                     icon: '',
-                    order: 100,
+                    order: 0,
                 },
             });
     }
@@ -41,7 +41,9 @@
 
     angular.module('BlurAdmin.main.dashboard.correlation.table')
         .controller('TableController', function ($scope, $timeout, TableService) {
-            $scope.barSelectedItem = {};
+            $scope.barSelectedItem = {
+                selected: {label: '60 Minutes', value: 60}
+            };
             $scope.barSizeItems = [
                 {label: '1 Minutes', value: 1},
                 {label: '5 Minutes', value: 5},
@@ -50,9 +52,11 @@
                 {label: '60 Minutes', value: 60}
             ];
             $scope.filter = {
-                correlation: 0
+                correlation: 0.6
             };
-            $scope.loopbackSelectedItem = {};
+            $scope.loopbackSelectedItem = {
+                selected: {label: '1 Qtr', value: '1qtr'}
+            };
             $scope.loopbackItems = [
                 {label: '1 Week', value: '1week'},
                 {label: '1 Month', value: '1month'},
@@ -64,6 +68,7 @@
                     $scope.tableData = data.data;
                 });
             };
+            $scope.filterData();
         });
 
 })();

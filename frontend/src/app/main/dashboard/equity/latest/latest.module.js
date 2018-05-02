@@ -5,7 +5,7 @@
 (function () {
     'use strict';
 
-    angular.module('BlurAdmin.main.dashboard.equity.latest', [])
+    angular.module('BlurAdmin.main.dashboard.equity.latest', ['smart-table'])
         .config(routeConfig);
 
     /** @ngInject */
@@ -15,7 +15,7 @@
                 url: '/latest',
                 templateUrl: 'app/main/dashboard/equity/latest/latest.html',
                 controller: 'LatestController',
-                title: 'Latest',
+                title: 'Latest Signals',
                 sidebarMeta: {
                     icon: '',
                     order: 0,
@@ -36,39 +36,13 @@
 
     angular.module('BlurAdmin.main.dashboard.equity.latest')
         .controller('LatestController', function ($scope, $state, LatestService) {
+            $scope.latestTableData = [];
             LatestService.getData().then(function (data) {
-                $scope.latestData = data.data;
+                $scope.rowCollection = data.data;
+                $scope.latestTableData = [].concat($scope.rowCollection);
             });
             $scope.showGraph = function (ticker) {
                 $state.go('dashboard.equity.ticker', {obj: ticker})
             };
-            $scope.sortKey = '';
-            $scope.ref = 1;
-            $scope.setSort = function (sortKey) {
-                $scope.ref = -$scope.ref;
-                if ($scope.sortKey !== sortKey)
-                    $scope.ref = 1;
-                $scope.sortKey = sortKey;
-                $scope.latestData = $scope.latestData.sort(function (a, b) {
-                    var ref = $scope.ref;
-                    if (sortKey === 'ticker') {
-                        if (a.ticker > b.ticker) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'sector') {
-                        if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'industry') {
-                        if (a.zacks_m_ind_desc > b.zacks_m_ind_desc) return ref;
-                        else return -ref;
-                    }
-                    if (sortKey === 'signal') {
-                        if (a.SignalConfidence > b.SignalConfidence) return ref;
-                        else return -ref;
-                    }
-                    return -1;
-                });
-            }
         });
 })();
