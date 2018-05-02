@@ -22,14 +22,14 @@ def download_sec_master_and_pricing():
     #securities master
     logging.info('Downloading trading securities master')
     sm = sql_source.get_sec_master()
-    sm.to_hdf(os.path.join(DataDir,'sec_master.hdf'),'table')
+    sm.to_hdf(os.path.join(DataDir,'sec_master.hdf'),'table',mode='w')
 
     #benchmarks 
     logging.info('Downloading benchmark data')
     benchmarks = [('SP500','S&P5'),('SP400','SPMC'),('SP600','S&P6')]
     for b,m_ticker in benchmarks:
         b_data = sql_source.get_source_eod_data(m_ticker = m_ticker,vendor='EODData')
-        b_data.to_hdf(os.path.join(DataDir,b+'.hdf'),'table')
+        b_data.to_hdf(os.path.join(DataDir,b+'.hdf'),'table',mode='w')
 
     #prices
     logging.info('Downloading pricing data')
@@ -40,12 +40,13 @@ def download_sec_master_and_pricing():
     if os.path.exists(filepath):
         prices = pd.read_hdf(filepath,'table')
         max_date = prices.data_date.max()
-        df = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)&(pricesT.c.data_data>max_date)),sql_source.CONN)
+        df = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)&(pricesT.c.data_date>max_date)),sql_source.CONN)
         prices = pd.concat([prices,df],ignore_index=True)
     else:
         prices = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id==3)),sql_source.CONN)
 
     prices = prices[prices.data_date >= '2003-01-01']
+
     prices.to_hdf(filepath,'table',format='table',data_columns=['data_date','sec_id'],mode='w')
 
     sql_source.close_connection()
@@ -56,12 +57,12 @@ def download_portfolio_data():
     #account history
     logging.info('Downloading trading account history')
     ah = pd.read_sql_table('account_history',sql_semoms.CONN)
-    ah.to_hdf(os.path.join(DataDir,'account_history.hdf'),'table')
+    ah.to_hdf(os.path.join(DataDir,'account_history.hdf'),'table',mode='w')
 
     #account positions
     logging.info('Downloading trading account positions')
     pos = pd.read_sql_table('nav_portfolio',sql_semoms.CONN)
-    pos.to_hdf(os.path.join(DataDir,'nav_portfolio.hdf'),'table')
+    pos.to_hdf(os.path.join(DataDir,'nav_portfolio.hdf'),'table',mode='w')
     sql_semoms.close_connection()
 
 def download_sec_ownership_data(): 
@@ -90,7 +91,7 @@ def download_equities_signal_data():
     filepath_full = os.path.join(DataDir,'equities_signals_full.hdf')
     if os.path.exists(filepath_full):
         signalsT = Table('V_website',sql_equities.META,autoload=True)
-        signals = pd.read_hdf(filepath_ful,'table',columns=['data_date'])
+        signals = pd.read_hdf(filepath_full,'table',columns=['data_date'])
         max_date = signals.data_date.max()
         df = pd.read_sql(signalsT.select().where(signalsT.c.data_date>max_date),sql_equities.CONN)
         signals = pd.concat([signals,df],ignore_index=True)
@@ -101,7 +102,10 @@ def download_equities_signal_data():
     signals['Short'] = (signals.SignalConfidence < EnterShort).astype(int)
     signals['Neutral'] = 1-(signals['Long'] | signals['Short'])
     signals['SignalDirection'] = signals.apply(lambda x: 'Long' if x.Long==1 else 'Short' if x.Short==1 else 'Neutral',axis=1)
-        
+
+    signals.zacks_x_sector_desc.fillna('',inplace=True)
+    signals.zacks_m_ind_desc.fillna('',inplace=True)
+
     signals.to_hdf(filepath_full,'table',format='table',data_columns=['data_date','ticker','zacks_x_sector_desc','zacks_m_ind_desc'],mode='w')
     max_date = signals.data_date.max()
 
@@ -114,13 +118,13 @@ def download_equities_signal_data():
     filepath_sec_ind = os.path.join(DataDir,'equities_signals_sec_ind.hdf')
     
     ind = signals.groupby(['data_date','zacks_x_sector_desc','zacks_m_ind_desc']).sum()[['Long','Short','Neutral']]
-    ind['Net'] = ind['Long'] / (ind['Long']+ind['Short'])
+    ind['Net'] = (ind['Long'] - ind['Short']) / (ind['Long']+ind['Short'])
     ind['Net - 1wk delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(5)
     ind['Net - 1mo delta'] = ind.groupby(level=['zacks_x_sector_desc','zacks_m_ind_desc'])['Net'].diff(20)
     ind.reset_index(level = ['zacks_x_sector_desc','zacks_m_ind_desc'], drop=False, inplace=True)
 
     sec = signals.groupby(['data_date','zacks_x_sector_desc']).sum()[['Long','Short','Neutral']]
-    sec['Net'] = sec['Long'] / (sec['Long']+sec['Short'])
+    sec['Net'] = (sec['Long'] - sec['Short']) / (sec['Long']+sec['Short'])
     sec['Net - 1wk delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
     sec['Net - 1mo delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
 
@@ -130,6 +134,7 @@ def download_equities_signal_data():
     sec_ind = pd.concat([ind.loc[max_date],sec.loc[max_date]],ignore_index=True)
     sec_ind = sec_ind.fillna(0)
     sec_ind.to_hdf(filepath_sec_ind,'table')
+
     sql_equities.close_connection()
 
 def prep_correlation_data ():
@@ -253,7 +258,6 @@ if __name__ == '__main__':
                  #download_sec_ownership_data, 
                  download_equities_signal_data]
 
-    functions = []
     logging.info('Starting website data download')
     for func in functions:
         try:
@@ -263,7 +267,7 @@ if __name__ == '__main__':
             logging.error(message)
             logging.error(traceback.format_exc())
 
-            response = Slack().send_slack_message(post_to = 'productionissues', message=message,
+            response = Slack().send_slack_message(post_to = 'testing', message=message,
                                                   post_as_username=os.path.basename(__file__))
 
     logging.info('Copying files to remote')
