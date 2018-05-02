@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-DataDir = 'semapp/data_dev'
+DataDir = 'semapp/data'
 
 # #for debug
 # class APIView(object):
@@ -128,16 +128,16 @@ class TradingExposuresView(GroupRequiredMixin, APIView):
             'Net_unadj')
         net_ind = net_ind.join(gross_ind)
         net_ind['Net'] = net_ind['Net_unadj'] / net_ind['Gross']
-        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(5)
-        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(20)
+        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(5).fillna(0)
+        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(20).fillna(0)
         net_ind.reset_index(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'], drop=False, inplace=True)
 
         gross_sec = pos.groupby(['TradeDate', 'zacks_x_sector_desc']).weight_abs.sum().to_frame('Gross')
         net_sec = pos.groupby(['TradeDate', 'zacks_x_sector_desc']).weight.sum().to_frame('Net_unadj')
         net_sec = net_sec.join(gross_sec)
         net_sec['Net'] = net_sec['Net_unadj'] / net_sec['Gross']
-        net_sec['Net - 1wk delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
-        net_sec['Net - 1mo delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
+        net_sec['Net - 1wk delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5).fillna(0)
+        net_sec['Net - 1mo delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20).fillna(0)
         net_sec.reset_index(level=['zacks_x_sector_desc'], drop=False, inplace=True)
         net_sec['zacks_m_ind_desc'] = 'All'
 
@@ -170,6 +170,7 @@ class SignalsSecIndView(APIView):
     def get(self, request, format=None):
         filepath = os.path.join(DataDir, 'equities_signals_sec_ind.hdf')
         signals = pd.read_hdf(filepath, 'table')
+        signals = signals[~signals.zacks_x_sector_desc.isin(['','Index'])]
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)
 
@@ -233,6 +234,7 @@ class CorrelationView(APIView):
                                          'comp1_H_3day_abs_return', 'comp2_H_3day_abs_return', 'delta_3day',
                                          'comp1_H_5day_abs_return', 'comp2_H_5day_abs_return', 'delta_5day']]
 
+            dislocations = dislocations.reindex(dislocations.delta_5day.abs().sort_values(ascending=False).index)
             context = {'data': dislocations.to_dict(orient='records')}
         else:
             df_corrmat = pd.read_csv(DataDir + '/correlation_network_files/corr_matrix_' + str(

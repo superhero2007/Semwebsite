@@ -290,9 +290,9 @@
                                 color: layoutColors.defaultText,
                                 "hideBulletsCount": 50,
                                 "lineThickness": 2,
-                                "lineColor": layoutColors.primary,
+                                "lineColor": layoutColors.success,
                                 "type": "smoothedLine",
-                                "title": $scope.filter.ticker,
+                                "title": $scope.filter.ticker.toUpperCase(),
                                 "useLineColorForBulletBorder": true,
                                 "valueField": "adj_close",
                                 "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
