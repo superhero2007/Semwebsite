@@ -15,10 +15,10 @@
                 url: '/ticker',
                 templateUrl: 'app/main/dashboard/equity/ticker/ticker.html',
                 controller: 'TickerController',
-                title: 'Ticker Search',
+                title: 'Ticker Signal History',
                 sidebarMeta: {
                     icon: '',
-                    order: 0,
+                    order: 200,
                 },
                 params: {
                     obj: null
@@ -241,7 +241,6 @@
     angular.module('BlurAdmin.main.dashboard.equity.ticker')
         .controller('TickerController', function ($scope, $stateParams, TickerService, baConfig) {
             var layoutColors = baConfig.colors;
-            console.log(layoutColors);
             $scope.filterParameter = $stateParams.obj;
             $scope.filter = {
                 ticker: ''
@@ -254,7 +253,7 @@
                     }
                     for (var i = 0; i < $scope.tickerData.length; i++) {
                         $scope.tickerData[i].max = 1;
-                        $scope.tickerData[i].long = 0.65;
+                        $scope.tickerData[i].long = 0.55;
                         $scope.tickerData[i].short = 0.45;
                         $scope.tickerData[i].min = 0;
                     }

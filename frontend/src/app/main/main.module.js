@@ -29,7 +29,6 @@
 
         $rootScope.$on('$stateChangeStart', function (event, next, current) {
             // redirect to login page if not logged in
-            console.log(next.name)
             if (next.name !== 'login' && !$rootScope.globals.currentUser) {
               // $state.go('login')
               // event.preventDefault();

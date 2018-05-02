@@ -5,19 +5,27 @@
 </div>
 <div class="popular-app-info row">
   <div class="col-xs-12">
-    <div class="pull-left">
+    <div class="pull-left info">
       <div>Sector:</div>
     </div>
-    <div class='pull-right'>
+    <div class='pull-right tickerData'>
       <div>{{ tickerData[0].zacks_x_sector_desc }}</div>
     </div>
   </div>
   <div class="col-xs-12 grid-h">
-    <div class="pull-left">
+    <div class="pull-left info">
       <div>Industry:</div>
     </div>
-    <div class='pull-right'>
+    <div class='pull-right tickerData'>
       <div>{{ tickerData[0].zacks_m_ind_desc }}</div>
     </div>
   </div>
 </div>
+<style>
+    .info {
+        font-size: 14px;
+    }
+    .tickerData {
+        font-size: 16px;
+    }
+</style>
