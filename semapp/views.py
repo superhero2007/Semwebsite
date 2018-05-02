@@ -300,11 +300,23 @@ class CorrelationView(APIView):
         return Response(context)
 
     def create_graph_data(self, nodes, edges):
+        colors = {'Industrials':'LightBlue',
+                  'Health Care':'PaleGoldenRod',
+                  'Financials':'Crimson',
+                  'Consumer Staples':'Lavender',
+                  'Consumer Discretionary':'Wheat',
+                  'Utilities':'GreenYellow',
+                  'Information Technology':'GoldenRod',
+                  'Energy':'WhiteSmoke',
+                  'Materials':'LightSlateGray',
+                  'Real Estate':'Lime',
+                  'Telecommunication Services':'Gold'}
+
         nodes = nodes.drop('Industry Group', axis=1)
         nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name'})
         nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s' % (x['name'], x.Sector, x.Industry),
                                      axis=1)
-        nodes['color'] = 'LightBlue'  # nodes.Sector.map(colors)
+        nodes['color'] = nodes.Sector.map(colors)
         nodes['x'] = 1
         nodes['y'] = nodes['x']
         nodes['id'] = nodes.index + 1
@@ -313,7 +325,7 @@ class CorrelationView(APIView):
 
         edges['from'] = edges.ticker1.map(nodes.set_index('label')['id'])
         edges['to'] = edges.ticker2.map(nodes.set_index('label')['id'])
-        edges = edges[['from', 'to', 'weight']]
+        edges = edges[['from', 'to', 'weight']].copy()
         edges.columns = ['from', 'to', 'title']
         edges.title = edges.title.round(2)
         edges['width'] = edges.title * 10
