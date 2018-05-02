@@ -22,44 +22,24 @@
     angular.module('BlurAdmin.main.login')
         .factory('LoginService', ['$http', '$cookieStore', '$rootScope', function ($http, $cookieStore, $rootScope) {
             return {
-
                 Login: function (username, password, callback) {
-
-                    // Dummy authentication for testing, uses $timeout to simulate api call
-
-                    // var response = { success: username === 'test' && password === 'test' };
-                    // if(!response.success) {
-                    //     response.message = 'Username or password is incorrect';
-                    // }
-                    // callback(response);
-
-
-                    // Use this for real authentication
                     $http.post('/api/user/', {username: username, password: password})
                         .success(function (response) {
                             callback(response);
                         });
-
                 },
-
                 SetCredentials: function (username, password) {
-                    var authdata = username + ':' + password;
-
                     $rootScope.globals = {
                         currentUser: {
                             username: username,
-                            authdata: authdata
+                            password: password
                         }
                     };
-
-                    // $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata; // jshint ignore:line
                     $cookieStore.put('globals', $rootScope.globals);
                 },
-
                 ClearCredentials: function () {
                     $rootScope.globals = {};
                     $cookieStore.remove('globals');
-                    // $http.defaults.headers.common.Authorization = 'Basic ';
                 }
             };
         }]);

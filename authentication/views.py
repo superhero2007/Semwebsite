@@ -21,7 +21,24 @@ class UserView(APIView):
 
         return Response(context)
 
-
     def delete(self, request, format=None):
         status = logout(request)
         return Response(status)
+
+
+class ChangeView(APIView):
+
+    def put(self, request, format=None):
+        context = {}
+        username = request.data['username']
+        oldPassword = request.data['oldPassword']
+        newPassword = request.data['newPassword']
+        user = authenticate(username=username, password=oldPassword)
+        if user is not None:
+            user.set_password(newPassword)
+            user.save()
+            context = {"status": "success", "success": "Success"}
+        else:
+            context = {"status": "error", "error_message": "The old password was incorrect."}
+
+        return Response(context)

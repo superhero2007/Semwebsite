@@ -18,4 +18,5 @@ from authentication import views
 
 urlpatterns = [
     path('user/', views.UserView.as_view(), name='user'),
+    path('user/change/', views.ChangeView.as_view(), name='user'),
 ]
