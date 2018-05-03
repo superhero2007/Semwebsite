@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-DataDir = 'semapp/data'
+import os
+APP_ROOT = os.path.realpath(os.path.dirname(__file__))
+DataDir = os.path.join(APP_ROOT,'data')
 
 # #for debug
 # class APIView(object):
@@ -21,7 +23,6 @@ import igraph
 
 EnterLong = 0.57
 EnterShort = 0.43
-
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
@@ -385,3 +386,35 @@ class NetworkView(APIView):
                    'my_edges': edges.to_dict(orient='records')}
 
         return Response(context)
+
+class FactorReturns(APIView):
+    def get(self, request, start_date, end_date, format=None):
+        returns = pd.read_hdf(DataDir+'/AXUS4-MH_ret.hdf', 'table')
+
+        style_factors = ['Dividend Yield', 'Earnings Yield',
+                         'Exchange Rate Sensitivity', 'Growth','Leverage',
+                         'Liquidity', 'Market Sensitivity', 'Medium-Term Momentum',
+                         'MidCap','Profitability','Size','Value', 'Volatility']
+                    
+        returns['label'] = ('Style: '+returns['FactorName']).where(returns.FactorName.isin(style_factors),None)
+        returns.loc[returns.FactorName=='Market Intercept','label'] = 'Market: Market Intercept'
+        returns['label'] = returns.label.where(returns.label.notnull(), 'Industry: '+returns.FactorName)
+
+        returns.set_index(['data_date','label'],inplace=True)
+
+        returns = returns['Return'].unstack(level=-1)/100
+        available_dates = returns.index.tolist()
+
+        start_date = returns.index.min() if start_date=='' else pd.to_datetime(start_date)
+        end_date = returns.index.min() if end_date =='' else pd.to_datetime(end_date)
+
+        returns = returns[start_date:end_date]
+        returns.iloc[0] = 0
+        returns = (1+returns).cumprod()
+
+        factors = sorted(returns.columns.tolist(),reverse=True)
+        returns.reset_index(inplace=True)
+        context = {'factors':factors, 'available_dates': available_dates, 'data':returns.to_dict(orient = 'records')}
+
+        return Response(context)
+

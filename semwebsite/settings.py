@@ -25,7 +25,7 @@ SECRET_KEY = '!8+^g-p64*nvk*kt&g3ekkn6+2u4l8yt&=#q+u2a(dj%461nkm'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost","internal.semanteon.com"]
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'semapp',
+    'mod_wsgi.server',
     'authentication',
     'rest_framework',
 ]
@@ -138,3 +139,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
