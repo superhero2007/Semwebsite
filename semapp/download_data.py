@@ -89,9 +89,10 @@ def download_equities_signal_data():
     logging.info('Downloading equities_signal_data')
     # full signals file
     filepath_full = os.path.join(DataDir,'equities_signals_full.hdf')
+
     if os.path.exists(filepath_full):
         signalsT = Table('V_website',sql_equities.META,autoload=True)
-        signals = pd.read_hdf(filepath_full,'table',columns=['data_date'])
+        signals = pd.read_hdf(filepath_full,'table')
         max_date = signals.data_date.max()
         df = pd.read_sql(signalsT.select().where(signalsT.c.data_date>max_date),sql_equities.CONN)
         signals = pd.concat([signals,df],ignore_index=True)
@@ -254,8 +255,8 @@ def prep_correlation_data ():
     
     
 if __name__ == '__main__':
-    functions = [download_sec_master_and_pricing, 
-                 download_portfolio_data,
+    functions = [#download_sec_master_and_pricing, 
+                 #download_portfolio_data,
                  #download_sec_ownership_data, 
                  download_equities_signal_data]
 
