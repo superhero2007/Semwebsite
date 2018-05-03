@@ -386,3 +386,33 @@ class NetworkView(APIView):
                    'my_edges': edges.to_dict(orient='records')}
 
         return Response(context)
+
+class FactorReturns(APIView):
+    def get(self, request, start_date, end_date, format=None):
+        returns = pd.read_hdf(DataDir+'/AXUS4-MH_ret.hdf', 'table')
+
+        style_factors = ['Dividend Yield', 'Earnings Yield',
+                         'Exchange Rate Sensitivity', 'Growth','Leverage',
+                         'Liquidity', 'Market Sensitivity', 'Medium-Term Momentum',
+                         'MidCap','Profitability','Size','Value', 'Volatility']
+                    
+        returns['label'] = ('Style: '+returns['FactorName']).where(returns.FactorName.isin(style_factors),None)
+        returns.loc[returns.FactorName=='Market Intercept','label'] = 'Market: Market Intercept'
+        returns['label'] = returns.label.where(returns.label.notnull(), 'Industry: '+returns.FactorName)
+
+        returns.set_index(['data_date','label'],inplace=True)
+
+        returns = returns['Return'].unstack(level=-1)/100
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
+
+        returns = returns[start_date:end_date]
+        returns.iloc[0] = 0
+        returns = (1+returns).cumprod()
+
+        factors = sorted(returns.columns.tolist(),reverse=True)
+        returns.reset_index(inplace=True)
+        context = {'factors':factors, 'data':returns.to_dict(orient = 'records')}
+
+        return Response(context)
+

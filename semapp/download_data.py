@@ -107,6 +107,7 @@ def download_equities_signal_data():
     signals.zacks_m_ind_desc.fillna('',inplace=True)
 
     signals.to_hdf(filepath_full,'table',format='table',data_columns=['data_date','ticker','zacks_x_sector_desc','zacks_m_ind_desc'],mode='w')
+
     max_date = signals.data_date.max()
 
     # write latest signal file
