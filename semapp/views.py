@@ -5,8 +5,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 import os
+
 APP_ROOT = os.path.realpath(os.path.dirname(__file__))
-DataDir = os.path.join(APP_ROOT,'data')
+DataDir = os.path.join(APP_ROOT, 'data_dev')
 
 # #for debug
 # class APIView(object):
@@ -23,6 +24,7 @@ import igraph
 
 EnterLong = 0.57
 EnterShort = 0.43
+
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
@@ -129,8 +131,10 @@ class TradingExposuresView(GroupRequiredMixin, APIView):
             'Net_unadj')
         net_ind = net_ind.join(gross_ind)
         net_ind['Net'] = net_ind['Net_unadj'] / net_ind['Gross']
-        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(5).fillna(0)
-        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(20).fillna(0)
+        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(
+            5).fillna(0)
+        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(
+            20).fillna(0)
         net_ind.reset_index(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'], drop=False, inplace=True)
 
         gross_sec = pos.groupby(['TradeDate', 'zacks_x_sector_desc']).weight_abs.sum().to_frame('Gross')
@@ -157,8 +161,10 @@ class SignalsLatestView(APIView):
     def get(self, request, format=None):
         filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
         signals = pd.read_hdf(filepath, 'table')
-        signals = signals[['data_date','ticker','market_cap','zacks_x_sector_desc','zacks_m_ind_desc','SignalConfidence','SignalDirection']]
-        signals.market_cap.fillna(0,inplace=True)
+        signals = signals[
+            ['data_date', 'ticker', 'market_cap', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'SignalConfidence',
+             'SignalDirection']]
+        signals.market_cap.fillna(0, inplace=True)
 
         signals = signals[signals.zacks_x_sector_desc.notnull()]
         # build context
@@ -171,7 +177,7 @@ class SignalsSecIndView(APIView):
     def get(self, request, format=None):
         filepath = os.path.join(DataDir, 'equities_signals_sec_ind.hdf')
         signals = pd.read_hdf(filepath, 'table')
-        signals = signals[~signals.zacks_x_sector_desc.isin(['','Index'])]
+        signals = signals[~signals.zacks_x_sector_desc.isin(['', 'Index'])]
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)
 
@@ -303,17 +309,17 @@ class CorrelationView(APIView):
         return Response(context)
 
     def create_graph_data(self, nodes, edges):
-        colors = {'Industrials':'LightBlue',
-                  'Health Care':'PaleGoldenRod',
-                  'Financials':'Crimson',
-                  'Consumer Staples':'Lavender',
-                  'Consumer Discretionary':'Wheat',
-                  'Utilities':'GreenYellow',
-                  'Information Technology':'GoldenRod',
-                  'Energy':'WhiteSmoke',
-                  'Materials':'LightSlateGray',
-                  'Real Estate':'Lime',
-                  'Telecommunication Services':'Gold'}
+        colors = {'Industrials': 'LightBlue',
+                  'Health Care': 'PaleGoldenRod',
+                  'Financials': 'Crimson',
+                  'Consumer Staples': 'Lavender',
+                  'Consumer Discretionary': 'Wheat',
+                  'Utilities': 'GreenYellow',
+                  'Information Technology': 'GoldenRod',
+                  'Energy': 'WhiteSmoke',
+                  'Materials': 'LightSlateGray',
+                  'Real Estate': 'Lime',
+                  'Telecommunication Services': 'Gold'}
 
         nodes = nodes.drop('Industry Group', axis=1)
         nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name'})
@@ -387,34 +393,36 @@ class NetworkView(APIView):
 
         return Response(context)
 
+
 class FactorReturns(APIView):
-    def get(self, request, start_date, end_date, format=None):
-        returns = pd.read_hdf(DataDir+'/AXUS4-MH_ret.hdf', 'table')
+    def post(self, request, format=None):
+        start_date = request.data['start_date']
+        end_date = request.data['end_date']
+        returns = pd.read_hdf(DataDir + '/AXUS4-MH_ret.hdf', 'table')
 
         style_factors = ['Dividend Yield', 'Earnings Yield',
-                         'Exchange Rate Sensitivity', 'Growth','Leverage',
+                         'Exchange Rate Sensitivity', 'Growth', 'Leverage',
                          'Liquidity', 'Market Sensitivity', 'Medium-Term Momentum',
-                         'MidCap','Profitability','Size','Value', 'Volatility']
-                    
-        returns['label'] = ('Style: '+returns['FactorName']).where(returns.FactorName.isin(style_factors),None)
-        returns.loc[returns.FactorName=='Market Intercept','label'] = 'Market: Market Intercept'
-        returns['label'] = returns.label.where(returns.label.notnull(), 'Industry: '+returns.FactorName)
+                         'MidCap', 'Profitability', 'Size', 'Value', 'Volatility']
 
-        returns.set_index(['data_date','label'],inplace=True)
+        returns['label'] = ('Style: ' + returns['FactorName']).where(returns.FactorName.isin(style_factors), None)
+        returns.loc[returns.FactorName == 'Market Intercept', 'label'] = 'Market: Market Intercept'
+        returns['label'] = returns.label.where(returns.label.notnull(), 'Industry: ' + returns.FactorName)
 
-        returns = returns['Return'].unstack(level=-1)/100
+        returns.set_index(['data_date', 'label'], inplace=True)
+
+        returns = returns['Return'].unstack(level=-1) / 100
         available_dates = returns.index.tolist()
 
-        start_date = returns.index.min() if start_date=='' else pd.to_datetime(start_date)
-        end_date = returns.index.min() if end_date =='' else pd.to_datetime(end_date)
+        start_date = returns.index.min() if start_date == '' else pd.to_datetime(start_date)
+        end_date = returns.index.min() if end_date == '' else pd.to_datetime(end_date)
 
         returns = returns[start_date:end_date]
         returns.iloc[0] = 0
-        returns = (1+returns).cumprod()
+        returns = (1 + returns).cumprod()
 
-        factors = sorted(returns.columns.tolist(),reverse=True)
+        factors = sorted(returns.columns.tolist(), reverse=True)
         returns.reset_index(inplace=True)
-        context = {'factors':factors, 'available_dates': available_dates, 'data':returns.to_dict(orient = 'records')}
+        context = {'factors': factors, 'available_dates': available_dates, 'data': returns.to_dict(orient='records')}
 
         return Response(context)
-

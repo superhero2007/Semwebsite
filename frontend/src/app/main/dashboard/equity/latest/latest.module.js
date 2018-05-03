@@ -41,6 +41,7 @@
             LatestService.getData().then(function (data) {
                 $scope.rowCollection = data.data;
                 $scope.latestTableData = [].concat($scope.rowCollection);
+            }).finally(function () {
                 $scope.dataLoading = false;
             });
             $scope.showGraph = function (ticker) {

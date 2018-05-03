@@ -8,7 +8,8 @@
   angular.module('BlurAdmin.main.dashboard', [
     'BlurAdmin.main.dashboard.trading',
     'BlurAdmin.main.dashboard.correlation',
-    'BlurAdmin.main.dashboard.equity'
+    'BlurAdmin.main.dashboard.equity',
+    'BlurAdmin.main.dashboard.factor'
   ])
     .config(routeConfig);
 

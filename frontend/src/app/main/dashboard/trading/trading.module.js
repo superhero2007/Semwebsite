@@ -21,7 +21,7 @@
         title: 'Trading',
         sidebarMeta: {
           icon: '',
-          order: 200,
+          order: 300,
         },
       })
   }
