@@ -1,15 +1,23 @@
 <div class="popular-app-cost row">
   <div class="col-xs-12">
-    {{ tickerData[0].ticker }}
+    {{ info.ticker }}
   </div>
 </div>
 <div class="popular-app-info row">
   <div class="col-xs-12">
     <div class="pull-left info">
+      <div>Name:</div>
+    </div>
+    <div class='pull-right tickerData'>
+      <div>{{ info.name }}</div>
+    </div>
+  </div>
+  <div class="col-xs-12 grid-h">
+    <div class="pull-left info">
       <div>Sector:</div>
     </div>
     <div class='pull-right tickerData'>
-      <div>{{ tickerData[0].zacks_x_sector_desc }}</div>
+      <div>{{ info.sector }}</div>
     </div>
   </div>
   <div class="col-xs-12 grid-h">
@@ -17,7 +25,23 @@
       <div>Industry:</div>
     </div>
     <div class='pull-right tickerData'>
-      <div>{{ tickerData[0].zacks_m_ind_desc }}</div>
+      <div>{{ info.industry }}</div>
+    </div>
+  </div>
+  <div class="col-xs-12 grid-h">
+    <div class="pull-left info">
+      <div>CIK:</div>
+    </div>
+    <div class='pull-right tickerData'>
+      <div>{{ info.cik }}</div>
+    </div>
+  </div>
+  <div class="col-xs-12 grid-h">
+    <div class="pull-left info">
+      <div>Market Cap:</div>
+    </div>
+    <div class='pull-right tickerData'>
+      <div>{{ info.market_cap }}</div>
     </div>
   </div>
 </div>

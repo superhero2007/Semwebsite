@@ -1,7 +1,5 @@
 from .mixins import GroupRequiredMixin
-
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 import os
@@ -10,9 +8,10 @@ APP_ROOT = os.path.realpath(os.path.dirname(__file__))
 DataDir = os.path.join(APP_ROOT, 'data')
 
 # #for debug
+# from .mixins import GroupRequiredMixin
 # class APIView(object):
 #  pass
-# DataDir = 'data'
+# DataDir = 'data_prod'
 
 import datetime, time
 import pandas as pd
@@ -21,10 +20,6 @@ import numpy as np
 from pandas.tseries.offsets import BDay
 import scipy.stats
 import igraph
-
-EnterLong = 0.57
-EnterShort = 0.43
-
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
@@ -206,8 +201,17 @@ class SignalsIndustryTableView(APIView):
 
 
 class SignalsTickerView(APIView):
-    def post(self, request, format=None):
+    def post(self, request, include_it_data = False, format=None):
         ticker = request.data['ticker']
+        ## find company name and cik
+        sm = pd.read_hdf(os.path.join(DataDir,'sec_master.hdf'),'table')
+        sm = sm[sm.ticker==ticker]
+        if len(sm)==1:
+            comp_name = sm.iloc[0].comp_name
+            cik = sm.iloc[0].comp_cik
+        else:
+            it_data = pd.DataFrame()
+
         filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
         ticker = ticker.upper()
         signal_data_columns = ['data_date', 'market_cap', 'ticker', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'close',
@@ -216,11 +220,44 @@ class SignalsTickerView(APIView):
         signals = pd.read_hdf(filepath, 'table', where='ticker=="%s"' % ticker)[signal_data_columns]
 
         ## Check if stacked signal data exists
-        if (not (len(signals))):
+        if not len(signals):
             return Response({'data': None})
 
+
         # build context
-        context = {'data': signals.to_dict(orient='records')}
+        context = {'ticker':ticker,'Name':comp_name,'CIK':cik,
+                   'Sector':signals.zacks_x_sector_desc.iloc[-1],
+                   'Industry':signals.zacks_m_ind_desc.iloc[-1],
+                   'Market Cap':signals.market_cap.iloc[-1],
+                   'signal_data': signals[['data_date','adj_close','SignalConfidence']].to_dict(orient='records')}
+
+        if include_it_data:
+            if pd.isnull(cik):
+                it_data = pd.DataFrame()
+
+            # get cik forms
+            filepath = os.path.join(DataDir,'sec_forms_ownership_source_full.hdf')
+            forms = pd.read_hdf(filepath,'table',where='IssuerCIK == "%s"'%cik)
+
+            forms.sort_values('AcceptedDate', ascending=False, inplace=True)
+            forms = forms[(forms.valid_purchase + forms.valid_sale)!=0]
+            forms['Direction'] = 'Buy'
+            forms['Direction'] = forms.Direction.where(forms.valid_purchase==1,'Sell')
+            forms = forms[~forms.TransType.isin(['LDG','HO','RB'])]
+
+            cols = ['SECAccNumber','URL','AcceptedDate','FilerName','InsiderTitle',
+                    'Director','TenPercentOwner','TransType','DollarValue','Direction']
+
+            forms = forms[cols].copy()
+            forms.reset_index(inplace=True,drop=True)
+            forms['tableIndex'] = forms.index
+            forms['AcceptedDateDate'] = pd.to_datetime(forms.AcceptedDate.apply(lambda x: x.date()))
+
+            graph_markers = signals.merge(forms,left_on='data_date',right_on='AcceptedDateDate')
+            graph_markers = graph_markers[['data_date','tableIndex','FilerName','TransType','DollarValue','Direction']]
+
+            context['graph_markers'] = graph_markers.to_dict(orient='records')
+            context['forms_table'] = forms.to_dict(orient='records')
 
         return Response(context)
 

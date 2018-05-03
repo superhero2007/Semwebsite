@@ -247,7 +247,15 @@
             };
             $scope.showChart = function () {
                 TickerService.getData($scope.filter.ticker).then(function (data) {
-                    $scope.tickerData = data.data;
+                    $scope.tickerData = data.signal_data;
+                    $scope.info = {
+                        cik: data['CIK'],
+                        industry: data['Industry'],
+                        market_cap: data['Market Cap'],
+                        name: data['Name'],
+                        sector: data['Sector'],
+                        ticker: data['ticker']
+                    };
                     if (!$scope.tickerData) {
                         return
                     }
