@@ -64,9 +64,13 @@
             ];
             $scope.tableData = [];
             $scope.filterData = function () {
+                $scope.dataLoading = true;
+                $scope.tableData = [];
                 TableService.getData($scope.barSelectedItem.selected.value, $scope.loopbackSelectedItem.selected.value, $scope.filter.correlation).then(function (data) {
                     $scope.rowCollection = data.data;
                     $scope.tableData = [].concat($scope.rowCollection);
+                }).finally(function (data) {
+                    $scope.dataLoading = false;
                 });
             };
             $scope.filterData();
