@@ -56,7 +56,8 @@
     "ng-js-tree": "~0.0.7",
     "angular-ui-select": "^0.19.6",
     "vis": "^4.21.0",
-    "angular-cookies": "~1.5.8"
+    "angular-cookies": "~1.5.8",
+    "angular-daterangepicker": "^0.2.2"
   },
   "resolutions": {
     "angular": "~1.5.9",

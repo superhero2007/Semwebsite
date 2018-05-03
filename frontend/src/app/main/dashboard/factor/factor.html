@@ -1,56 +1,28 @@
 <div class="row ba-panel">
     <div class="col-xlg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12"
          ba-panel>
-        <form class="row form-group">
-            <div class="form-group col-sm-3 col-xs-6">
-                <ui-select ng-model="barSelectedItem.selected"
-                           class="btn-group bootstrap-select form-control"
+        <div class="row form-group">
+            <div class="form-group col-sm-12 col-xs-12">
+                <ui-select multiple ng-model="multipleItem.selected"
                            ng-disabled="false"
+                           search-enabled="true"
                            append-to-body="true"
-                           search-enabled="false">
-                    <ui-select-match placeholder="Bar Size">
-                        <span> {{$select.selected.label}}</span>
+                           class="form-control ">
+                    <ui-select-match placeholder="Multiple Select">
+                        {{$item}}
                     </ui-select-match>
-                    <ui-select-choices
-                            repeat="barSizeItem in barSizeItems | filter: $select.search">
-                        <span ng-bind-html="barSizeItem.label"></span>
+                    <ui-select-choices repeat="multipleItem in multipleSelectItems | filter: $select.search">
+                        {{ multipleItem }}
                     </ui-select-choices>
                 </ui-select>
             </div>
-            <div class="form-group col-sm-3 col-xs-6">
-                <ui-select ng-model="loopbackSelectedItem.selected"
-                           class="btn-group bootstrap-select form-control"
-                           ng-disabled="false"
-                           append-to-body="true"
-                           search-enabled="false">
-                    <ui-select-match placeholder="Loopback">
-                        <span> {{$select.selected.label}}</span>
-                    </ui-select-match>
-                    <ui-select-choices
-                            repeat="loopbackItem in loopbackItems | filter: $select.search">
-                        <span ng-bind-html="loopbackItem.label"></span>
-                    </ui-select-choices>
-                </ui-select>
+            <div class="form-group col-sm-9 col-xs-12">
+                <input date-range-picker class="form-control date-picker" type="text" ng-model="filter.date"/>
             </div>
-            <div class="form-group col-sm-3 col-xs-6">
-                <input type="number" step="0.1" class="form-control" placeholder="Correlation Threshold"
-                       ng-model="filter.correlation" min="0" max="1">
+            <div class="form-group col-sm-3 col-xs-3">
+                <button class="btn btn-primary" ng-click="showGraph()">Run</button>
             </div>
-            <div class="form-group col-sm-3 col-xs-6">
-                <button class="btn btn-primary" ng-click="filterData()">Run</button>
-            </div>
-        </form>
-        <form class="row form-group">
-            <div class="form-group col-sm-3 col-xs-6">
-                <input type="text" class="form-control" placeholder="Search Ticker" ng-change="filter_company()"
-                       ng-model="filter.ticker">
-            </div>
-            <div class="form-group col-sm-3 col-xs-6">
-                <input type="number" step="0.1" class="form-control" placeholder="Weight" ng-change="filter_weight()"
-                       min="0" max="1" ng-model="filter.weight">
-            </div>
-            <button class="btn btn-primary" ng-click="show_complete_chart()">Reset Filter</button>
-        </form>
+        </div>
     </div>
 </div>
 <div class="row">
@@ -58,7 +30,7 @@
         <div ba-panel
              ba-panel-title="Graph"
              ba-panel-class="with-scroll large-panel">
-            <div id="mynetwork" style="height: 100%"></div>
+            <div id="myFactor" class="admin-chart"></div>
         </div>
     </div>
 </div>

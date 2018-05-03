@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 import os
 
 APP_ROOT = os.path.realpath(os.path.dirname(__file__))
-DataDir = os.path.join(APP_ROOT, 'data_dev')
+DataDir = os.path.join(APP_ROOT, 'data')
 
 # #for debug
 # class APIView(object):
@@ -398,6 +398,7 @@ class FactorReturns(APIView):
     def post(self, request, format=None):
         start_date = request.data['start_date']
         end_date = request.data['end_date']
+        selected_factors = request.data['selected_factors']
         returns = pd.read_hdf(DataDir + '/AXUS4-MH_ret.hdf', 'table')
 
         style_factors = ['Dividend Yield', 'Earnings Yield',
@@ -413,16 +414,18 @@ class FactorReturns(APIView):
 
         returns = returns['Return'].unstack(level=-1) / 100
         available_dates = returns.index.tolist()
+        all_factors = sorted(returns.columns.tolist(), reverse=True)
 
         start_date = returns.index.min() if start_date == '' else pd.to_datetime(start_date)
         end_date = returns.index.min() if end_date == '' else pd.to_datetime(end_date)
 
-        returns = returns[start_date:end_date]
+        selected_factors = selected_factors if len(selected_factors) else ['Style: Growth', 'Style: Value']
+        returns = returns[start_date:end_date][selected_factors]
         returns.iloc[0] = 0
         returns = (1 + returns).cumprod()
 
-        factors = sorted(returns.columns.tolist(), reverse=True)
         returns.reset_index(inplace=True)
-        context = {'factors': factors, 'available_dates': available_dates, 'data': returns.to_dict(orient='records')}
+        context = {'all_factors': all_factors, 'available_dates': available_dates,
+                   'data': returns.to_dict(orient='records')}
 
         return Response(context)
