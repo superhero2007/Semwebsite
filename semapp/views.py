@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
-DataDir = 'semapp/data'
+import os
+APP_ROOT = os.path.realpath(os.path.dirname(__file__))
+DataDir = os.path.join(APP_ROOT,'data')
 
 # #for debug
 # class APIView(object):
@@ -21,7 +23,6 @@ import igraph
 
 EnterLong = 0.57
 EnterShort = 0.43
-
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
