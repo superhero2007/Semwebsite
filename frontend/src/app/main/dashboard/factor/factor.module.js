@@ -264,50 +264,7 @@
                         $scope.data[i].short = 0.45;
                         $scope.data[i].min = 0;
                     }
-                    $scope.graphs = [
-                        {
-                            "id": "long",
-                            "valueAxis": "v2",
-                            "lineAlpha": 0,
-                            "valueField": "long",
-                            "title": "Long",
-                            "fillAphas": 0,
-                            "visibleInLegend": false,
-                            "showBalloon": false
-                        },
-                        {
-                            "valueAxis": "v2",
-                            "fillAlphas": 0.3,
-                            "lineAlpha": 0,
-                            "valueField": "max",
-                            "fillToGraph": "long",
-                            "fillColors": layoutColors.success,
-                            "legendColor": layoutColors.success,
-                            "visibleInLegend": false,
-                            "showBalloon": false
-                        },
-                        {
-                            "id": "min",
-                            "valueAxis": "v2",
-                            "lineAlpha": 0,
-                            "valueField": "min",
-                            "fillAphas": 0,
-                            "showBalloon": false,
-                            "visibleInLegend": false
-                        },
-                        {
-                            "valueAxis": "v2",
-                            "fillAlphas": 0.3,
-                            "lineAlpha": 0,
-                            "valueField": "short",
-                            "fillToGraph": "min",
-                            "title": "Short",
-                            "legendColor": layoutColors.danger,
-                            "fillColors": layoutColors.danger,
-                            "visibleInLegend": false,
-                            "showBalloon": false
-                        }
-                    ];
+                    $scope.graphs = [];
                     for (i = 0; i < $scope.filter.selected_factors.length; i++) {
                         $scope.graphs.push(
                             {
@@ -337,16 +294,6 @@
                             "id": "v1",
                             "position": "left",
                             "autoGridCount": false
-                        }, {
-                            color: layoutColors.defaultText,
-                            axisColor: layoutColors.defaultText,
-                            gridColor: layoutColors.defaultText,
-                            "id": "v2",
-                            "gridAlpha": 0,
-                            "position": "right",
-                            "autoGridCount": false,
-                            "minimum": 0,
-                            "maximum": 1
                         }],
                         "graphs": $scope.graphs,
                         "chartScrollbar": {
