@@ -1,4 +1,16 @@
 <div class="page-top clearfix" scroll-position="scrolled" max-height="50" ng-class="{'scrolled': scrolled}">
-  <a href="/Trading/Dashboard" class="al-logo clearfix"><span>Semanteon</span></a>
-  <a href class="collapse-menu-link ion-navicon" ba-sidebar-toggle-menu></a>
+    <a href="#/dashboard/equity/latest" class="al-logo clearfix"><span>Semanteon</span></a>
+    <a href class="collapse-menu-link ion-navicon" ba-sidebar-toggle-menu></a>
+    <div class="user-profile clearfix">
+        <div class="al-user-profile" uib-dropdown>
+            <a uib-dropdown-toggle class="profile-toggle-link">
+                <img ng-src="{{::( 'app/my-app-logo.png' | appImage )}}"/>
+            </a>
+            <ul class="top-dropdown-menu profile-dropdown" uib-dropdown-menu>
+                <li><i class="dropdown-arr"></i></li>
+                <li><a href="#/change"><i class="fa fa-cog"></i>Change Password</a></li>
+                <li><a href="#/login" class="signout"><i class="fa fa-power-off"></i>Sign out</a></li>
+            </ul>
+        </div>
+    </div>
 </div>
