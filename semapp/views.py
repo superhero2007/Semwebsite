@@ -403,8 +403,10 @@ class FactorReturns(APIView):
         returns.set_index(['data_date','label'],inplace=True)
 
         returns = returns['Return'].unstack(level=-1)/100
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(end_date)
+        available_dates = returns.index.tolist()
+
+        start_date = returns.index.min() if start_date=='' else pd.to_datetime(start_date)
+        end_date = returns.index.min() if end_date =='' else pd.to_datetime(end_date)
 
         returns = returns[start_date:end_date]
         returns.iloc[0] = 0
@@ -412,7 +414,7 @@ class FactorReturns(APIView):
 
         factors = sorted(returns.columns.tolist(),reverse=True)
         returns.reset_index(inplace=True)
-        context = {'factors':factors, 'data':returns.to_dict(orient = 'records')}
+        context = {'factors':factors, 'available_dates': available_dates, 'data':returns.to_dict(orient = 'records')}
 
         return Response(context)
 
