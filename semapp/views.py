@@ -232,7 +232,6 @@ class SignalsTickerView(APIView):
                    'Market Cap': signals.market_cap.iloc[-1],
                    'signal_data': signals[['data_date', 'adj_close', 'SignalConfidence']].to_dict(orient='records'),
                    'signal_data_found': True}
-        print (context)
         if include_it_data:
             if pd.isnull(cik):
                 it_data = pd.DataFrame()
@@ -260,7 +259,9 @@ class SignalsTickerView(APIView):
             graph_markers = signals.merge(forms, left_on='data_date', right_on='AcceptedDateDate')
             graph_markers = graph_markers[
                 ['data_date', 'tableIndex', 'FilerName', 'TransType', 'DollarValue', 'Direction']]
-
+            graph_markers.fillna(0,inplace=True)
+            forms.fillna(0,inplace=True)            
+            
             context['graph_markers'] = graph_markers.to_dict(orient='records')
             context['forms_table'] = forms.to_dict(orient='records')
 
