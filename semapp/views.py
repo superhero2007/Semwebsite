@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 import os
 
 APP_ROOT = os.path.realpath(os.path.dirname(__file__))
-DataDir = os.path.join(APP_ROOT, 'data_dev')
+DataDir = os.path.join(APP_ROOT, 'data')
 
 # #for debug
 # from .mixins import GroupRequiredMixin
@@ -204,7 +204,10 @@ class SignalsIndustryTableView(APIView):
 class SignalsTickerView(APIView):
     def post(self, request, format=None):
         ticker = request.data['ticker']
+
         include_it_data = request.data['include_it_data']
+        ticker = ticker.upper()
+
         ## find company name and cik
         sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
         sm = sm[sm.ticker == ticker]
@@ -215,7 +218,7 @@ class SignalsTickerView(APIView):
             return Response({'signal_data_found': False})
 
         filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        ticker = ticker.upper()
+
         signal_data_columns = ['data_date', 'market_cap', 'ticker', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'close',
                                'adj_close', 'SignalConfidence']
 
@@ -232,7 +235,6 @@ class SignalsTickerView(APIView):
                    'Market Cap': signals.market_cap.iloc[-1],
                    'signal_data': signals[['data_date', 'adj_close', 'SignalConfidence']].to_dict(orient='records'),
                    'signal_data_found': True}
-
         if include_it_data:
             if pd.isnull(cik):
                 it_data = pd.DataFrame()
@@ -260,6 +262,8 @@ class SignalsTickerView(APIView):
             graph_markers = signals.merge(forms, left_on='data_date', right_on='AcceptedDateDate')
             graph_markers = graph_markers[
                 ['data_date', 'tableIndex', 'FilerName', 'TransType', 'DollarValue', 'Direction']]
+            graph_markers.fillna(0, inplace=True)
+            forms.fillna(0, inplace=True)
 
             context['graph_markers'] = graph_markers.to_dict(orient='records')
             context['forms_table'] = forms.to_dict(orient='records')
