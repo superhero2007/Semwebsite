@@ -210,7 +210,7 @@ class SignalsTickerView(APIView):
             comp_name = sm.iloc[0].comp_name
             cik = sm.iloc[0].comp_cik
         else:
-            it_data = pd.DataFrame()
+            return Response({'signal_data_found':False))            
 
         filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
         ticker = ticker.upper()
@@ -219,9 +219,9 @@ class SignalsTickerView(APIView):
 
         signals = pd.read_hdf(filepath, 'table', where='ticker=="%s"' % ticker)[signal_data_columns]
 
-        ## Check if stacked signal data exists
+        ## Check if signal data exists
         if not len(signals):
-            return Response({'data': None})
+            return Response({'signal_data_found': False})
 
 
         # build context
@@ -229,16 +229,19 @@ class SignalsTickerView(APIView):
                    'Sector':signals.zacks_x_sector_desc.iloc[-1],
                    'Industry':signals.zacks_m_ind_desc.iloc[-1],
                    'Market Cap':signals.market_cap.iloc[-1],
-                   'signal_data': signals[['data_date','adj_close','SignalConfidence']].to_dict(orient='records')}
+                   'signal_data': signals[['data_date','adj_close','SignalConfidence']].to_dict(orient='records'),
+                   'signal_data_found':True}
 
         if include_it_data:
             if pd.isnull(cik):
                 it_data = pd.DataFrame()
-
+                context['it_data_found'] = False
+                return Response(context)
+            
             # get cik forms
             filepath = os.path.join(DataDir,'sec_forms_ownership_source_full.hdf')
             forms = pd.read_hdf(filepath,'table',where='IssuerCIK == "%s"'%cik)
-
+            
             forms.sort_values('AcceptedDate', ascending=False, inplace=True)
             forms = forms[(forms.valid_purchase + forms.valid_sale)!=0]
             forms['Direction'] = 'Buy'
@@ -247,7 +250,7 @@ class SignalsTickerView(APIView):
 
             cols = ['SECAccNumber','URL','AcceptedDate','FilerName','InsiderTitle',
                     'Director','TenPercentOwner','TransType','DollarValue','Direction']
-
+            
             forms = forms[cols].copy()
             forms.reset_index(inplace=True,drop=True)
             forms['tableIndex'] = forms.index
