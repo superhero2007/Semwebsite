@@ -246,6 +246,8 @@
                 ticker: ''
             };
             $scope.showChart = function () {
+                $scope.tickerData = [];
+                $scope.info = {};
                 TickerService.getData($scope.filter.ticker).then(function (data) {
                     $scope.tickerData = data.signal_data;
                     $scope.info = {
@@ -254,7 +256,8 @@
                         market_cap: data['Market Cap'],
                         name: data['Name'],
                         sector: data['Sector'],
-                        ticker: data['ticker']
+                        ticker: data['ticker'],
+                        signal_data_found: data['signal_data_found']
                     };
                     if (!$scope.tickerData) {
                         return
