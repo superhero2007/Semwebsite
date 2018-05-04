@@ -204,6 +204,7 @@ class SignalsIndustryTableView(APIView):
 class SignalsTickerView(APIView):
     def post(self, request, include_it_data=False, format=None):
         ticker = request.data['ticker']
+        ticker = ticker.upper()
         ## find company name and cik
         sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
         sm = sm[sm.ticker == ticker]
@@ -214,7 +215,7 @@ class SignalsTickerView(APIView):
             return Response({'signal_data_found': False})
 
         filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
-        ticker = ticker.upper()
+
         signal_data_columns = ['data_date', 'market_cap', 'ticker', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'close',
                                'adj_close', 'SignalConfidence']
 
@@ -231,7 +232,7 @@ class SignalsTickerView(APIView):
                    'Market Cap': signals.market_cap.iloc[-1],
                    'signal_data': signals[['data_date', 'adj_close', 'SignalConfidence']].to_dict(orient='records'),
                    'signal_data_found': True}
-
+        print (context)
         if include_it_data:
             if pd.isnull(cik):
                 it_data = pd.DataFrame()
