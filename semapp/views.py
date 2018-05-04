@@ -202,9 +202,12 @@ class SignalsIndustryTableView(APIView):
 
 
 class SignalsTickerView(APIView):
-    def post(self, request, include_it_data=False, format=None):
+    def post(self, request, format=None):
         ticker = request.data['ticker']
+
+        include_it_data = request.data['include_it_data']
         ticker = ticker.upper()
+
         ## find company name and cik
         sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
         sm = sm[sm.ticker == ticker]
@@ -265,6 +268,8 @@ class SignalsTickerView(APIView):
             graph_markers = graph_markers[
                 ['data_date', 'tableIndex', 'FilerName', 'TransType', 'DollarValue', 'Direction','adj_close','marker_count']]
 
+            graph_markers.fillna(0, inplace=True)
+            forms.fillna(0, inplace=True)
 
             context['graph_markers'] = graph_markers.to_dict(orient='records')
             context['forms_table'] = forms.to_dict(orient='records')

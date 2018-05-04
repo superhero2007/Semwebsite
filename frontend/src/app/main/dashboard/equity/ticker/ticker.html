@@ -3,8 +3,15 @@
          ba-panel>
         <form class="row form-inline">
             <div class="form-group col-sm-3 col-xs-6">
-                <input type="text" class="form-control" placeholder="Search Ticker" ng-change="filter_ticker()"
+                <label for="ticker">Ticker</label>
+                <input type="text" class="form-control" id="ticker" placeholder="Search Ticker"
+                       ng-change="filter_ticker()"
                        ng-model="filter.ticker">
+            </div>
+            <div class="form-group col-sm-3 col-xs-6">
+                <label for="insiderTransactions">Insider Transactions</label>
+                <ba-switcher switcher-style="primary" id="insiderTransactions" switcher-value="filter.include_it_data"
+                             class="form-control" style="padding-top: 0; padding-left: 0; border: 0"></ba-switcher>
             </div>
         </form>
     </div>
