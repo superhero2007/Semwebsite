@@ -230,8 +230,8 @@
     angular.module('BlurAdmin.main.dashboard.equity.ticker')
         .factory('TickerService', function ($http) {
             return {
-                getData: function (ticker) {
-                    return $http.post('/api/Equity/Ticker/', {ticker: ticker}).then(function (result) {
+                getData: function (filter) {
+                    return $http.post('/api/Equity/Ticker/', filter).then(function (result) {
                         return result.data
                     });
                 }
@@ -243,12 +243,13 @@
             var layoutColors = baConfig.colors;
             $scope.filterParameter = $stateParams.obj;
             $scope.filter = {
-                ticker: ''
+                ticker: '',
+                include_it_data: false
             };
             $scope.showChart = function () {
                 $scope.tickerData = [];
                 $scope.info = {};
-                TickerService.getData($scope.filter.ticker).then(function (data) {
+                TickerService.getData($scope.filter).then(function (data) {
                     $scope.tickerData = data.signal_data;
                     $scope.info = {
                         cik: data['CIK'],

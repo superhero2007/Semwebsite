@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 import os
 
 APP_ROOT = os.path.realpath(os.path.dirname(__file__))
-DataDir = os.path.join(APP_ROOT, 'data')
+DataDir = os.path.join(APP_ROOT, 'data_dev')
 
 # #for debug
 # from .mixins import GroupRequiredMixin
@@ -202,8 +202,9 @@ class SignalsIndustryTableView(APIView):
 
 
 class SignalsTickerView(APIView):
-    def post(self, request, include_it_data=False, format=None):
+    def post(self, request, format=None):
         ticker = request.data['ticker']
+        include_it_data = request.data['include_it_data']
         ## find company name and cik
         sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
         sm = sm[sm.ticker == ticker]

@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'semapp',
-    'mod_wsgi.server',
+    # 'mod_wsgi.server',
     'authentication',
     'rest_framework',
 ]
