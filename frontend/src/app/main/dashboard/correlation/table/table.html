@@ -3,11 +3,13 @@
          ba-panel>
         <form class="row form-inline">
             <div class="form-group col-sm-3 col-xs-6">
+                <label for="barSize">Bar Size</label>
                 <ui-select ng-model="barSelectedItem.selected"
                            class="btn-group bootstrap-select form-control"
                            ng-disabled="false"
                            append-to-body="true"
-                           search-enabled="false">
+                           search-enabled="false"
+                           id="barSize">
                     <ui-select-match placeholder="Bar Size">
                         <span> {{$select.selected.label}}</span>
                     </ui-select-match>
@@ -18,11 +20,13 @@
                 </ui-select>
             </div>
             <div class="form-group col-sm-3 col-xs-6">
+                <label for="loopback">Loopback</label>
                 <ui-select ng-model="loopbackSelectedItem.selected"
                            class="btn-group bootstrap-select form-control"
                            ng-disabled="false"
                            append-to-body="true"
-                           search-enabled="false">
+                           search-enabled="false"
+                           id="loopback">
                     <ui-select-match placeholder="Loopback">
                         <span> {{$select.selected.label}}</span>
                     </ui-select-match>
@@ -33,11 +37,12 @@
                 </ui-select>
             </div>
             <div class="form-group col-sm-3 col-xs-6">
+                <label for="correlation">Correlation Threshold</label>
                 <input type="number" step="0.1" class="form-control" placeholder="Correlation Threshold"
-                       ng-model="filter.correlation" min="0" max="1">
+                       ng-model="filter.correlation" min="0" max="1" id="correlation">
             </div>
             <div class="form-group col-sm-3 col-xs-6">
-                <button class="btn btn-primary" ng-click="filterData()">Run</button>
+                <button class="btn btn-primary" ng-click="filterData()" style="margin-top: 21px;">Run</button>
             </div>
         </form>
     </div>
@@ -66,6 +71,12 @@
                     <th st-sort="comp2_H_5day_abs_return">Ticker 2</th>
                     <th st-sort="delta_5day">Delta</th>
                 </tr>
+                <tr>
+                    <th colspan="12"><input st-search="" placeholder="Search Ticker"
+                                            class="input-sm form-control search-input"
+                                            type="search" style="margin: 0"/>
+                    </th>
+                </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="entry in tableData">
@@ -83,6 +94,13 @@
                     <td>{{ (entry.delta_5day * 100).toFixed(1) }}%</td>
                 </tr>
                 </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="12" class="text-center">
+                        <div st-pagination="" st-items-by-page="15" st-displayed-pages="5"></div>
+                    </td>
+                </tr>
+                </tfoot>
             </table>
         </div>
     </div>

@@ -3,11 +3,13 @@
          ba-panel>
         <form class="row form-group">
             <div class="form-group col-sm-3 col-xs-6">
+                <label for="barSize">Bar Size</label>
                 <ui-select ng-model="barSelectedItem.selected"
                            class="btn-group bootstrap-select form-control"
                            ng-disabled="false"
                            append-to-body="true"
-                           search-enabled="false">
+                           search-enabled="false"
+                           id="barSize">
                     <ui-select-match placeholder="Bar Size">
                         <span> {{$select.selected.label}}</span>
                     </ui-select-match>
@@ -18,11 +20,13 @@
                 </ui-select>
             </div>
             <div class="form-group col-sm-3 col-xs-6">
+                <label for="loopback">Loopback</label>
                 <ui-select ng-model="loopbackSelectedItem.selected"
                            class="btn-group bootstrap-select form-control"
                            ng-disabled="false"
                            append-to-body="true"
-                           search-enabled="false">
+                           search-enabled="false"
+                           id="loopback">
                     <ui-select-match placeholder="Loopback">
                         <span> {{$select.selected.label}}</span>
                     </ui-select-match>
@@ -33,31 +37,37 @@
                 </ui-select>
             </div>
             <div class="form-group col-sm-3 col-xs-6">
-                <input type="number" step="0.1" class="form-control" placeholder="Correlation Threshold"
+                <label for="correlation">Correlation Threshold</label>
+                <input type="number" id="correlation" step="0.1" class="form-control"
+                       placeholder="Correlation Threshold"
                        ng-model="filter.correlation" min="0" max="1">
             </div>
-            <div class="form-group col-sm-3 col-xs-6">
+            <div class="form-group col-sm-3 col-xs-6" style="margin-top: 21px">
                 <button class="btn btn-primary" ng-click="filterData()">Run</button>
             </div>
-        </form>
-        <form class="row form-group">
-            <div class="form-group col-sm-3 col-xs-6">
-                <input type="text" class="form-control" placeholder="Search Ticker" ng-change="filter_company()"
-                       ng-model="filter.ticker">
-            </div>
-            <div class="form-group col-sm-3 col-xs-6">
-                <input type="number" step="0.1" class="form-control" placeholder="Weight" ng-change="filter_weight()"
-                       min="0" max="1" ng-model="filter.weight">
-            </div>
-            <button class="btn btn-primary" ng-click="show_complete_chart()">Reset Filter</button>
         </form>
     </div>
 </div>
 <div class="row">
     <div class="col-xlg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div ba-panel
-             ba-panel-title="Graph"
              ba-panel-class="with-scroll large-panel">
+            <form class="row form-group">
+                <div class="form-group col-sm-3 col-xs-6">
+                    <label for="searchTicker">Ticker</label>
+                    <input type="text" class="form-control" id="searchTicker" placeholder="Search Ticker"
+                           ng-change="filter_company()"
+                           ng-model="filter.ticker">
+                </div>
+                <!-- <div class="form-group col-sm-3 col-xs-6">
+                    <label for="searchWeight">Weight</label>
+                    <input type="number" step="0.1" class="form-control" id="searchWeight" placeholder="Weight"
+                           ng-change="filter_weight()"
+                           min="0" max="1" ng-model="filter.weight">
+                </div> -->
+                <button class="btn btn-primary" ng-click="show_complete_chart()" style="margin-top: 21px">Reset Zoom
+                </button>
+            </form>
             <div id="mynetwork" style="height: 100%"></div>
         </div>
     </div>

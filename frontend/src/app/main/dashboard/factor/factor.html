@@ -1,13 +1,16 @@
 <div class="row ba-panel">
     <div class="col-xlg-3 col-lg-3 col-md-3 col-sm-6 col-xs-12"
          ba-panel>
-        <div class="row form-group">
+        <div class="row form-inline">
             <div class="form-group col-sm-12 col-xs-12">
+                <label for="factor">Factors</label>
                 <ui-select multiple ng-model="multipleItem.selected"
                            ng-disabled="false"
                            search-enabled="true"
                            append-to-body="true"
-                           class="form-control ">
+                           class="form-control "
+                           ng-change="showGraph()"
+                           id="factor">
                     <ui-select-match placeholder="Multiple Select">
                         {{$item}}
                     </ui-select-match>
@@ -16,11 +19,10 @@
                     </ui-select-choices>
                 </ui-select>
             </div>
-            <div class="form-group col-sm-9 col-xs-12">
-                <input date-range-picker class="form-control date-picker" type="text" ng-model="filter.date"/>
-            </div>
-            <div class="form-group col-sm-3 col-xs-3">
-                <button class="btn btn-primary" ng-click="showGraph()">Run</button>
+            <div class="form-group col-sm-12 col-xs-12 grid-h">
+                <label for="dateRanger">Date Range</label>
+                <input date-range-picker class="form-control date-picker" type="text" ng-model="filter.date" id="dateRange"
+                       options="{eventHandlers: {'apply.daterangepicker': dateChange}}"/>
             </div>
         </div>
     </div>

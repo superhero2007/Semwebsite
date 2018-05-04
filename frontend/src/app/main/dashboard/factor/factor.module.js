@@ -348,6 +348,9 @@
                 });
             };
             $scope.showGraph();
+            $scope.dateChange = function (ev, picker) {
+              $scope.showGraph();
+            };
         });
 
 })();
