@@ -1,15 +1,25 @@
 <div class="table-responsive">
     <table class="table">
+        <thead>
         <tr>
-            <th></th>
-            <th>Sector / Industry</th>
-            <th>Long</th>
-            <th>Neutral</th>
-            <th>Short</th>
+            <th rowspan="2" class="text-center"></th>
+            <th rowspan="2" class="text-center">Sector / Industry</th>
+            <th rowspan="2" class="text-center">Long</th>
+            <th rowspan="2" class="text-center">Neutral</th>
+            <th rowspan="2" class="text-center">Short</th>
+            <th colspan="3" class="text-center">Unweighted</th>
+            <th colspan="3" class="text-center">Market Cap Weighted</th>
+        </tr>
+        <tr>
             <th>Net</th>
             <th>Net - 1wk delta</th>
             <th>Net - 1mo delta</th>
+            <th>NetW</th>
+            <th>NetW - 1wk delta</th>
+            <th>NetW - 1mo delta</th>
         </tr>
+        </thead>
+        <tbody>
         <tr ng-repeat='entry in exposuresData' ng-class="{'header': entry.zacks_m_ind_desc == 'All'}"
             ng-show="entry.zacks_m_ind_desc === 'All' || headers.indexOf(entry.zacks_x_sector_desc) !== -1">
             <td ng-click="collapse(entry)">
@@ -40,7 +50,17 @@
             <td>
                 {{(100 * entry["Net - 1mo delta"]).toFixed()}}%
             </td>
+            <td ng-style="{'background': (entry.NetW > 0.01 ? 'rgba(32, 158, 145, {{ entry.NetW }})' : (entry.NetW < -0.01 ? 'rgba(232, 86, 86, {{ -entry.NetW }})' : 'white'))}">
+                {{(100 * entry.NetW).toFixed()}}%
+            </td>
+            <td>
+                {{(100 * entry["NetW - 1wk delta"]).toFixed()}}%
+            </td>
+            <td>
+                {{(100 * entry["NetW - 1mo delta"]).toFixed()}}%
+            </td>
         </tr>
+        </tbody>
     </table>
 </div>
 <style>
@@ -54,5 +74,9 @@
         cursor: pointer;
         font-weight: 600;
         color: #209e91;
+    }
+    .table > thead > tr > th {
+        vertical-align: middle;
+        font-weight: 700;
     }
 </style>
