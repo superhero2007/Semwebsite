@@ -232,7 +232,7 @@ class SignalsTickerView(APIView):
                    'Market Cap': signals.market_cap.iloc[-1],
                    'signal_data': signals[['data_date', 'adj_close', 'SignalConfidence']].to_dict(orient='records'),
                    'signal_data_found': True}
-        print (context)
+
         if include_it_data:
             if pd.isnull(cik):
                 it_data = pd.DataFrame()
@@ -258,8 +258,13 @@ class SignalsTickerView(APIView):
             forms['AcceptedDateDate'] = pd.to_datetime(forms.AcceptedDate.apply(lambda x: x.date()))
 
             graph_markers = signals.merge(forms, left_on='data_date', right_on='AcceptedDateDate')
+            def add_count(x):
+                return (pd.Series(index = x.index,data = range(len(x))))
+            graph_markers['marker_count'] = graph_markers.groupby(['data_date','Direction'],as_index=False,group_keys=False).apply(lambda x: add_count(x))
+            graph_markers['marker_count'] = graph_markers['marker_count'] + 1
             graph_markers = graph_markers[
-                ['data_date', 'tableIndex', 'FilerName', 'TransType', 'DollarValue', 'Direction']]
+                ['data_date', 'tableIndex', 'FilerName', 'TransType', 'DollarValue', 'Direction','adj_close','marker_count']]
+
 
             context['graph_markers'] = graph_markers.to_dict(orient='records')
             context['forms_table'] = forms.to_dict(orient='records')
