@@ -11,7 +11,7 @@
             <div class="form-group col-sm-3 col-xs-6">
                 <label for="insiderTransactions">Insider Transactions</label>
                 <ba-switcher switcher-style="primary" id="insiderTransactions" switcher-value="filter.include_it_data"
-                             class="form-control" style="padding-top: 0; padding-left: 0; border: 0"></ba-switcher>
+                             class="form-control" style="padding-top: 0; padding-left: 0; border: 0" switcher-change="onChange" ng-model="filter.include_it_data"></ba-switcher>
             </div>
         </form>
     </div>
@@ -31,6 +31,45 @@
             </div>
         </div>
         <div id="tickerChart" class="admin-chart"></div>
+    </div>
+</div>
+<div class="row" ng-show="info.signal_data_found && formsTable.length">
+    <div class="col-xlg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12"
+         ba-panel>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>TableIndex</th>
+                <th>AcceptedDate</th>
+                <th>AcceptedDateDate</th>
+                <th>Direction</th>
+                <th>Director</th>
+                <th>DollarValue</th>
+                <th>FilerName</th>
+                <th>InsiderTitle</th>
+                <th>SECAccNumber</th>
+                <th>TenPercentOwner</th>
+                <th>TransType</th>
+                <th>URL</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="entry in formsTable">
+                <th ng-class="'entry' + entry.tableIndex">{{ entry.tableIndex }}</th>
+                <th>{{ entry.AcceptedDate }}</th>
+                <th>{{ entry.AcceptedDateDate }}</th>
+                <th>{{ entry.Direction }}</th>
+                <th>{{ entry.Director }}</th>
+                <th>{{ entry.DollarValue }}</th>
+                <th>{{ entry.FilerName }}</th>
+                <th>{{ entry.InsiderTitle }}</th>
+                <th>{{ entry.SECAccNumber }}</th>
+                <th>{{ entry.TenPercentOwner }}</th>
+                <th>{{ entry.TransType }}</th>
+                <th>{{ entry.URL }}</th>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <style>

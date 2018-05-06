@@ -248,9 +248,13 @@
             };
             $scope.showChart = function () {
                 $scope.tickerData = [];
+                $scope.graphMarkers = [];
+                $scope.formsTable = [];
                 $scope.info = {};
                 TickerService.getData($scope.filter).then(function (data) {
                     $scope.tickerData = data.signal_data;
+                    $scope.graphMarkers = data.graph_markers;
+                    $scope.formsTable = data.forms_table;
                     $scope.info = {
                         cik: data['CIK'],
                         industry: data['Industry'],
@@ -263,12 +267,41 @@
                     if (!$scope.tickerData) {
                         return
                     }
-                    for (var i = 0; i < $scope.tickerData.length; i++) {
+                    var offset = 10;
+                    if ($scope.graphMarkers) {
+                        for (var i = 0; i < $scope.graphMarkers.length; i++) {
+                            var graphMarkerItem = $scope.graphMarkers[i];
+                            if (graphMarkerItem.Direction === 'Sell') {
+                                $scope.tickerData.push({
+                                    data_date: graphMarkerItem.data_date,
+                                    sellValue: graphMarkerItem.adj_close + graphMarkerItem.marker_count * offset,
+                                    tableIndex: graphMarkerItem.tableIndex,
+                                    FilerName: graphMarkerItem.FilerName,
+                                    TransType: graphMarkerItem.TransType,
+                                    DollarValue: graphMarkerItem.DollarValue
+                                })
+                            } else if (graphMarkerItem.Direction === 'Buy') {
+                                $scope.tickerData.push({
+                                    data_date: graphMarkerItem.data_date,
+                                    buyValue: graphMarkerItem.adj_close - graphMarkerItem.marker_count * offset,
+                                    tableIndex: graphMarkerItem.tableIndex,
+                                    FilerName: graphMarkerItem.FilerName,
+                                    TransType: graphMarkerItem.TransType,
+                                    DollarValue: graphMarkerItem.DollarValue
+                                })
+                            }
+                        }
+                    }
+                    for (i = 0; i < $scope.tickerData.length; i++) {
                         $scope.tickerData[i].max = 1;
                         $scope.tickerData[i].long = 0.55;
                         $scope.tickerData[i].short = 0.45;
                         $scope.tickerData[i].min = 0;
                     }
+                    $scope.tickerData = $scope.tickerData.sort(function (a, b) {
+                        return new Date(a.data_date) - new Date(b.data_date);
+                    });
+                    console.log($scope.tickerData);
 
                     var chart = AmCharts.makeChart("tickerChart", {
                         "type": "serial",
@@ -321,6 +354,34 @@
                                 "useLineColorForBulletBorder": true,
                                 "valueField": "SignalConfidence",
                                 "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
+                            },
+                            {
+                                "valueAxis": "v1",
+                                color: layoutColors.defaultText,
+                                "lineThickness": 2,
+                                "lineColor": layoutColors.warning,
+                                "title": "Sell",
+                                "valueField": "sellValue",
+                                "balloonFunction": function (graphDataitem, graph) {
+                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
+                                },
+                                "bullet": "triangleUp",
+                                "bulletSize": 20,
+                                "lineAlpha": 0
+                            },
+                            {
+                                "valueAxis": "v1",
+                                color: layoutColors.defaultText,
+                                "lineThickness": 2,
+                                "lineColor": layoutColors.info,
+                                "title": "Buy",
+                                "valueField": "buyValue",
+                                "balloonFunction": function (graphDataitem, graph) {
+                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
+                                },
+                                "bullet": "triangleDown",
+                                "bulletSize": 20,
+                                "lineAlpha": 0
                             },
                             {
                                 "id": "long",
@@ -382,14 +443,14 @@
                             selectedGraphLineColor: layoutColors.defaultText,
                             selectedGraphLineAlpha: 1
                         },
-                        "chartCursor": {
+                        /* "chartCursor": {
                             "pan": true,
                             "cursorColor": layoutColors.danger,
                             "valueLineEnabled": true,
                             "valueLineBalloonEnabled": true,
                             "cursorAlpha": 0,
                             "valueLineAlpha": 0.2
-                        },
+                        }, */
                         "categoryField": "data_date",
                         "categoryAxis": {
                             "axisColor": layoutColors.defaultText,
@@ -414,6 +475,13 @@
                         },
                         "dataProvider": $scope.tickerData
                     });
+                    chart.addListener("clickGraphItem", handleClick);
+                    function handleClick (event) {
+                        console.log(event.item.dataContext.tableIndex);
+                        $('html, body').animate({
+                           scrollTop: $('.entry' + event.item.dataContext.tableIndex).offset().top - 70
+                        }, 1000);
+                    }
                 })
             };
             $scope.tickerData = [];
@@ -427,6 +495,11 @@
                 } else {
                     $scope.tickerData = [];
                 }
+            };
+            $scope.onChange = function (data, value) {
+                console.log(value)
+                $scope.filter.include_it_data = value;
+              $scope.showChart();
             };
         });
 })();
