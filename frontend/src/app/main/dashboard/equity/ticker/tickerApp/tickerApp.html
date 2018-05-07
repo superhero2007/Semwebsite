@@ -5,49 +5,49 @@
 </div>
 <div class="popular-app-info row">
   <div class="col-xs-12">
-    <div class="pull-left info">
+    <div class="text-left info">
       <div>Name:</div>
     </div>
-    <div class='pull-right tickerData'>
+    <div class='text-left tickerData'>
       <div>{{ info.name }}</div>
     </div>
   </div>
-  <div class="col-xs-12 grid-h">
-    <div class="pull-left info">
+  <div class="col-xs-12 labels">
+    <div class="text-left info">
       <div>Sector:</div>
     </div>
-    <div class='pull-right tickerData'>
+    <div class='text-left tickerData'>
       <div>{{ info.sector }}</div>
     </div>
   </div>
-  <div class="col-xs-12 grid-h">
-    <div class="pull-left info">
+  <div class="col-xs-12 labels">
+    <div class="text-left info">
       <div>Industry:</div>
     </div>
-    <div class='pull-right tickerData'>
+    <div class='text-left tickerData'>
       <div>{{ info.industry }}</div>
     </div>
   </div>
-  <div class="col-xs-12 grid-h">
-    <div class="pull-left info">
+  <div class="col-xs-12 labels">
+    <div class="text-left info">
       <div>CIK:</div>
     </div>
-    <div class='pull-right tickerData'>
+    <div class='text-left tickerData'>
       <div>{{ info.cik }}</div>
     </div>
   </div>
-  <div class="col-xs-12 grid-h">
-    <div class="pull-left info">
+  <div class="col-xs-12 labels">
+    <div class="text-left info">
       <div>Market Cap:</div>
     </div>
-    <div class='pull-right tickerData'>
-      <div>{{ info.market_cap }}</div>
+    <div class='text-left tickerData'>
+      <div>{{ (info.market_cap / 1000000).toFixed() }}M</div>
     </div>
   </div>
 </div>
 <style>
     .info {
-        font-size: 14px;
+        font-size: 12px;
     }
     .tickerData {
         font-size: 16px;

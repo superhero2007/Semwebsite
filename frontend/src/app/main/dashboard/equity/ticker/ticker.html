@@ -9,9 +9,11 @@
                        ng-model="filter.ticker">
             </div>
             <div class="form-group col-sm-3 col-xs-6">
-                <label for="insiderTransactions">Insider Transactions</label>
+                <div>
+                    <label for="insiderTransactions">Insider Transactions</label>
+                </div>
                 <ba-switcher switcher-style="primary" id="insiderTransactions" switcher-value="filter.include_it_data"
-                             class="form-control" style="padding-top: 0; padding-left: 0; border: 0" switcher-change="onChange" ng-model="filter.include_it_data"></ba-switcher>
+                             switcher-change="onChange" ng-model="filter.include_it_data"></ba-switcher>
             </div>
         </form>
     </div>
@@ -36,37 +38,31 @@
 <div class="row" ng-show="info.signal_data_found && formsTable.length">
     <div class="col-xlg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12"
          ba-panel>
-        <table class="table">
+        <table class="table" style="width: auto;">
             <thead>
             <tr>
-                <th>TableIndex</th>
+                <th>SECAccNumber</th>
                 <th>AcceptedDate</th>
-                <th>AcceptedDateDate</th>
-                <th>Direction</th>
-                <th>Director</th>
-                <th>DollarValue</th>
                 <th>FilerName</th>
                 <th>InsiderTitle</th>
-                <th>SECAccNumber</th>
+                <th>Director</th>
                 <th>TenPercentOwner</th>
                 <th>TransType</th>
-                <th>URL</th>
+                <th>DollarValue</th>
+                <th>Direction</th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="entry in formsTable">
-                <th ng-class="'entry' + entry.tableIndex">{{ entry.tableIndex }}</th>
+            <tr ng-repeat="entry in formsTable" ng-class="'entry' + entry.tableIndex">
+                <th><a ng-href="{{ entry.URL }}">{{ entry.SECAccNumber }}</a></th>
                 <th>{{ entry.AcceptedDate }}</th>
-                <th>{{ entry.AcceptedDateDate }}</th>
-                <th>{{ entry.Direction }}</th>
-                <th>{{ entry.Director }}</th>
-                <th>{{ entry.DollarValue }}</th>
                 <th>{{ entry.FilerName }}</th>
                 <th>{{ entry.InsiderTitle }}</th>
-                <th>{{ entry.SECAccNumber }}</th>
+                <th>{{ entry.Director }}</th>
                 <th>{{ entry.TenPercentOwner }}</th>
                 <th>{{ entry.TransType }}</th>
-                <th>{{ entry.URL }}</th>
+                <th>{{ (entry.DollarValue / 1000).toFixed() }}K</th>
+                <th>{{ entry.Direction }}</th>
             </tr>
             </tbody>
         </table>

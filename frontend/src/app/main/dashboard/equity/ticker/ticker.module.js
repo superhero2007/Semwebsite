@@ -267,8 +267,109 @@
                     if (!$scope.tickerData) {
                         return
                     }
-                    var offset = 10;
+                    $scope.graphs = [
+                        {
+                            "id": "g1",
+                            "valueAxis": "v1",
+                            color: layoutColors.defaultText,
+                            "hideBulletsCount": 50,
+                            "lineThickness": 2,
+                            "lineColor": layoutColors.success,
+                            "type": "smoothedLine",
+                            "title": $scope.filter.ticker.toUpperCase(),
+                            "useLineColorForBulletBorder": true,
+                            "valueField": "adj_close",
+                            "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
+                        },
+                        {
+                            "id": "g2",
+                            "valueAxis": "v2",
+                            color: layoutColors.defaultText,
+                            "hideBulletsCount": 50,
+                            "lineThickness": 2,
+                            "lineColor": layoutColors.info,
+                            "type": "smoothedLine",
+                            "title": "Signal Strength",
+                            "useLineColorForBulletBorder": true,
+                            "valueField": "SignalConfidence",
+                            "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
+                        },
+                        {
+                            "id": "long",
+                            "valueAxis": "v2",
+                            "lineAlpha": 0,
+                            "valueField": "long",
+                            "title": "Long",
+                            "fillAphas": 0,
+                            "showBalloon": false
+                        },
+                        {
+                            "id": "g3",
+                            "valueAxis": "v2",
+                            "fillAlphas": 0.3,
+                            "lineAlpha": 0,
+                            "valueField": "max",
+                            "fillToGraph": "long",
+                            "fillColors": layoutColors.success,
+                            "legendColor": layoutColors.success,
+                            "visibleInLegend": false,
+                            "showBalloon": false
+                        },
+                        {
+                            "id": "min",
+                            "valueAxis": "v2",
+                            "lineAlpha": 0,
+                            "valueField": "min",
+                            "fillAphas": 0,
+                            "showBalloon": false,
+                            "visibleInLegend": false
+                        },
+                        {
+                            "id": "g4",
+                            "valueAxis": "v2",
+                            "fillAlphas": 0.3,
+                            "lineAlpha": 0,
+                            "valueField": "short",
+                            "fillToGraph": "min",
+                            "title": "Short",
+                            "legendColor": layoutColors.danger,
+                            "fillColors": layoutColors.danger,
+                            "showBalloon": false
+                        }
+                    ];
+                    var offset = 5;
+                    var size =10;
                     if ($scope.graphMarkers) {
+                        $scope.graphs.push(
+                            {
+                                "valueAxis": "v1",
+                                color: layoutColors.defaultText,
+                                "lineThickness": 2,
+                                "lineColor": layoutColors.warning,
+                                "title": "Sell",
+                                "valueField": "sellValue",
+                                "balloonFunction": function (graphDataitem, graph) {
+                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
+                                },
+                                "bullet": "triangleUp",
+                                "bulletSize": size,
+                                "lineAlpha": 0
+                            });
+                        $scope.graphs.push(
+                            {
+                                "valueAxis": "v1",
+                                color: layoutColors.defaultText,
+                                "lineThickness": 2,
+                                "lineColor": layoutColors.info,
+                                "title": "Buy",
+                                "valueField": "buyValue",
+                                "balloonFunction": function (graphDataitem, graph) {
+                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
+                                },
+                                "bullet": "triangleDown",
+                                "bulletSize": size,
+                                "lineAlpha": 0
+                            });
                         for (var i = 0; i < $scope.graphMarkers.length; i++) {
                             var graphMarkerItem = $scope.graphMarkers[i];
                             if (graphMarkerItem.Direction === 'Sell') {
@@ -328,104 +429,7 @@
                             "minimum": 0,
                             "maximum": 1
                         }],
-                        "graphs": [
-                            {
-                                "id": "g1",
-                                "valueAxis": "v1",
-                                color: layoutColors.defaultText,
-                                "hideBulletsCount": 50,
-                                "lineThickness": 2,
-                                "lineColor": layoutColors.success,
-                                "type": "smoothedLine",
-                                "title": $scope.filter.ticker.toUpperCase(),
-                                "useLineColorForBulletBorder": true,
-                                "valueField": "adj_close",
-                                "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
-                            },
-                            {
-                                "id": "g2",
-                                "valueAxis": "v2",
-                                color: layoutColors.defaultText,
-                                "hideBulletsCount": 50,
-                                "lineThickness": 2,
-                                "lineColor": layoutColors.info,
-                                "type": "smoothedLine",
-                                "title": "Signal Strength",
-                                "useLineColorForBulletBorder": true,
-                                "valueField": "SignalConfidence",
-                                "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
-                            },
-                            {
-                                "valueAxis": "v1",
-                                color: layoutColors.defaultText,
-                                "lineThickness": 2,
-                                "lineColor": layoutColors.warning,
-                                "title": "Sell",
-                                "valueField": "sellValue",
-                                "balloonFunction": function (graphDataitem, graph) {
-                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
-                                },
-                                "bullet": "triangleUp",
-                                "bulletSize": 20,
-                                "lineAlpha": 0
-                            },
-                            {
-                                "valueAxis": "v1",
-                                color: layoutColors.defaultText,
-                                "lineThickness": 2,
-                                "lineColor": layoutColors.info,
-                                "title": "Buy",
-                                "valueField": "buyValue",
-                                "balloonFunction": function (graphDataitem, graph) {
-                                    return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
-                                },
-                                "bullet": "triangleDown",
-                                "bulletSize": 20,
-                                "lineAlpha": 0
-                            },
-                            {
-                                "id": "long",
-                                "valueAxis": "v2",
-                                "lineAlpha": 0,
-                                "valueField": "long",
-                                "title": "Long",
-                                "fillAphas": 0,
-                                "showBalloon": false
-                            },
-                            {
-                                "id": "g3",
-                                "valueAxis": "v2",
-                                "fillAlphas": 0.3,
-                                "lineAlpha": 0,
-                                "valueField": "max",
-                                "fillToGraph": "long",
-                                "fillColors": layoutColors.success,
-                                "legendColor": layoutColors.success,
-                                "visibleInLegend": false,
-                                "showBalloon": false
-                            },
-                            {
-                                "id": "min",
-                                "valueAxis": "v2",
-                                "lineAlpha": 0,
-                                "valueField": "min",
-                                "fillAphas": 0,
-                                "showBalloon": false,
-                                "visibleInLegend": false
-                            },
-                            {
-                                "id": "g4",
-                                "valueAxis": "v2",
-                                "fillAlphas": 0.3,
-                                "lineAlpha": 0,
-                                "valueField": "short",
-                                "fillToGraph": "min",
-                                "title": "Short",
-                                "legendColor": layoutColors.danger,
-                                "fillColors": layoutColors.danger,
-                                "showBalloon": false
-                            }
-                        ],
+                        "graphs": $scope.graphs,
                         "chartScrollbar": {
                             "graph": "g1",
                             "oppositeAxis": false,
@@ -476,10 +480,11 @@
                         "dataProvider": $scope.tickerData
                     });
                     chart.addListener("clickGraphItem", handleClick);
-                    function handleClick (event) {
+
+                    function handleClick(event) {
                         console.log(event.item.dataContext.tableIndex);
                         $('html, body').animate({
-                           scrollTop: $('.entry' + event.item.dataContext.tableIndex).offset().top - 70
+                            scrollTop: $('.entry' + event.item.dataContext.tableIndex).offset().top - 70
                         }, 1000);
                     }
                 })
@@ -499,7 +504,7 @@
             $scope.onChange = function (data, value) {
                 console.log(value)
                 $scope.filter.include_it_data = value;
-              $scope.showChart();
+                $scope.showChart();
             };
         });
 })();
