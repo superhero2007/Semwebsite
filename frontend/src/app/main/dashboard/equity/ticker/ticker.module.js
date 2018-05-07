@@ -301,7 +301,8 @@
                             "valueField": "long",
                             "title": "Long",
                             "fillAphas": 0,
-                            "showBalloon": false
+                            "showBalloon": false,
+                            "visibleInLegend": false
                         },
                         {
                             "id": "g3",
@@ -334,7 +335,8 @@
                             "title": "Short",
                             "legendColor": layoutColors.danger,
                             "fillColors": layoutColors.danger,
-                            "showBalloon": false
+                            "showBalloon": false,
+                            "visibleInLegend": false
                         }
                     ];
                     var offset = 5;
@@ -345,13 +347,13 @@
                                 "valueAxis": "v1",
                                 color: layoutColors.defaultText,
                                 "lineThickness": 2,
-                                "lineColor": layoutColors.warning,
+                                "lineColor": layoutColors.danger,
                                 "title": "Sell",
                                 "valueField": "sellValue",
                                 "balloonFunction": function (graphDataitem, graph) {
                                     return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
                                 },
-                                "bullet": "triangleUp",
+                                "bullet": "triangleDown",
                                 "bulletSize": size,
                                 "lineAlpha": 0
                             });
@@ -360,13 +362,13 @@
                                 "valueAxis": "v1",
                                 color: layoutColors.defaultText,
                                 "lineThickness": 2,
-                                "lineColor": layoutColors.info,
+                                "lineColor": layoutColors.success,
                                 "title": "Buy",
                                 "valueField": "buyValue",
                                 "balloonFunction": function (graphDataitem, graph) {
                                     return "FilerName: " + graphDataitem.dataContext.FilerName + "<br>TransType: " + graphDataitem.dataContext.TransType + "<br>DollarValue: " + graphDataitem.dataContext.DollarValue;
                                 },
-                                "bullet": "triangleDown",
+                                "bullet": "triangleUp",
                                 "bulletSize": size,
                                 "lineAlpha": 0
                             });
@@ -375,7 +377,7 @@
                             if (graphMarkerItem.Direction === 'Sell') {
                                 $scope.tickerData.push({
                                     data_date: graphMarkerItem.data_date,
-                                    sellValue: graphMarkerItem.adj_close + graphMarkerItem.marker_count * offset,
+                                    sellValue: graphMarkerItem.adj_close + graphMarkerItem.marker_count * offset + 5,
                                     tableIndex: graphMarkerItem.tableIndex,
                                     FilerName: graphMarkerItem.FilerName,
                                     TransType: graphMarkerItem.TransType,
@@ -384,7 +386,7 @@
                             } else if (graphMarkerItem.Direction === 'Buy') {
                                 $scope.tickerData.push({
                                     data_date: graphMarkerItem.data_date,
-                                    buyValue: graphMarkerItem.adj_close - graphMarkerItem.marker_count * offset,
+                                    buyValue: graphMarkerItem.adj_close - graphMarkerItem.marker_count * offset - 5,
                                     tableIndex: graphMarkerItem.tableIndex,
                                     FilerName: graphMarkerItem.FilerName,
                                     TransType: graphMarkerItem.TransType,
