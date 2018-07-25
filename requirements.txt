@@ -34,3 +34,5 @@ traitlets==4.3.2
 urllib3==1.22
 wcwidth==0.1.7
 websocket-client==0.47.0
+pyarrow==0.8.0
+

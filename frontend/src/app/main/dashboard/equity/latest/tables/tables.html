@@ -5,8 +5,8 @@
             <th st-sort="data_date">Date</th>
             <th st-sort="ticker">Ticker</th>
             <th>Market Cap</th>
-            <th st-sort="zacks_x_sector_desc">Sector</th>
-            <th st-sort="zacks_m_ind_desc">Industry</th>
+            <th st-sort="Sector">Sector</th>
+            <th st-sort="Industry">Industry</th>
             <th st-sort="SignalConfidence">SignalConfidence</th>
             <th>SignalDirection</th>
         </tr>
@@ -15,10 +15,10 @@
             <th><input st-search="ticker" placeholder="Search Ticker" class="input-sm form-control search-input"
                        type="search"/></th>
             <th></th>
-            <th><input st-search="zacks_x_sector_desc" placeholder="Search Sector"
+            <th><input st-search="Sector" placeholder="Search Sector"
                        class="input-sm form-control search-input"
                        type="search"/></th>
-            <th><input st-search="zacks_m_ind_desc" placeholder="Search Industry"
+            <th><input st-search="Industry" placeholder="Search Industry"
                        class="input-sm form-control search-input"
                        type="search"/>
             </th>
@@ -34,8 +34,8 @@
             <td>{{ item.data_date.substr(0, 10) }}</td>
             <td class="ticker" ng-click="showGraph(item.ticker)">{{ item.ticker }}</td>
             <td>{{ (item.market_cap / 1000000000).toFixed(1) }}B</td>
-            <td>{{ item.zacks_x_sector_desc }}</td>
-            <td>{{ item.zacks_m_ind_desc }}</td>
+            <td>{{ item.Sector }}</td>
+            <td>{{ item.Industry }}</td>
             <td>{{ item.SignalConfidence.toFixed(2) }}</td>
             <td>{{ item.SignalDirection }}</td>
         </tr>

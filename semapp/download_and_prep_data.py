@@ -5,109 +5,111 @@ import pandas as pd
 import datetime, time
 import logging
 import traceback
-
-from semutils.logging import setup_logger
-
-setup_logger('download_data.log')
-from semutils.messaging import Slack
-from semutils.db_access import Access_SQL_DB, Access_SQL_Source
 from sqlalchemy import select, Table, Column
 
+from semutils.logging.setup_logger import setup_logger
+setup_logger('download_data.log')
+from semutils.messaging.Slack import Slack
+from semutils.db_access.AccessReference import AccessReference
+from semutils.db_access.AccessSQL import Access_SQL_DB
+
+from semutils.db_access.MasterConfig import MasterConfig
+SQLHost = MasterConfig['prod']['sql_ref_host']
+
+SignalsModel = '2018-06-21'
 DataDir = 'data_prod'
 RemoteDir = '/home/web/projects/semwebsite/semapp'
 
 EnterLong = 0.55
 EnterShort = 0.45
 
-
 def download_sec_master_and_pricing(**kwargs):
+    ref = AccessReference(sql_host = SQLHost)
+
+    # securities master
+    logging.info('Downloading securities master')
+    sm = ref.get_sec_master()
+    sm.to_parquet(os.path.join(DataDir, 'sec_master.parquet'))
+
+    # get indices
+    benchmarks = [('SP500','SP50'),('SP400','MID'),('SP600','SML')]
+
+    for b,bid in benchmarks:
+        b_data = ref.get_index_prices(benchmark_id = bid)
+        b_data.to_parquet(os.path.join(DataDir, b + '.parquet'))
 
 
-sql_source = Access_SQL_Source(os.environ.get('MySQL_Server'))
+    # prices
+    logging.info('Downloading pricing data')
+    cols = ['sec_id', 'm_ticker', 'data_date', 'adj_close', 'close']
 
-# securities master
-logging.info('Downloading trading securities master')
-sm = sql_source.get_sec_master()
-sm.to_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table', mode='w')
+    filepath = os.path.join(DataDir, 'eod_prices.hdf')
 
-# benchmarks
-logging.info('Downloading benchmark data')
-benchmarks = [('SP500', 'S&P5'), ('SP400', 'SPMC'), ('SP600', 'S&P6')]
-for b, m_ticker in benchmarks:
-    b_data = sql_source.get_source_eod_data(m_ticker=m_ticker, vendor='EODData')
-    b_data.to_hdf(os.path.join(DataDir, b + '.hdf'), 'table', mode='w')
+    if os.path.exists(filepath) and (not kwargs['clear_existing']):
+        prices = pd.read_hdf(filepath, 'table')
+        max_date = prices.data_date.max()
+        df = ref.get_daily_prices( start_date = max_date, columns = ['sec_id','data_date','adj_close','close'])
+        df.reset_index(inplace=True)
+        prices = pd.concat([prices, df], ignore_index=True)
+    else:
+        prices = ref.get_daily_prices( start_date = datetime.datetime(2003,1,1), columns = ['sec_id','data_date','adj_close','close'])
+        prices.reset_index(inplace=True)
 
-# prices
-logging.info('Downloading pricing data')
-cols = ['sec_id', 'm_ticker', 'data_date', 'adj_close', 'close']
-pricesT = Table('eod_data_source', sql_source.META, autoload=True)
-filepath = os.path.join(DataDir, 'qm_eod_source.hdf')
+    prices.to_hdf(filepath, 'table', format='table', data_columns=['data_date', 'sec_id'], mode='w')
 
-if os.path.exists(filepath) and (not kwargs['clear_existing']):
-    prices = pd.read_hdf(filepath, 'table')
-max_date = prices.data_date.max()
-df = pd.read_sql(
-    select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id == 3) & (pricesT.c.data_date > max_date)),
-    sql_source.CONN)
-prices = pd.concat([prices, df], ignore_index=True)
-else:
-prices = pd.read_sql(select([pricesT.c[x] for x in cols]).where((pricesT.c.vendor_id == 3)), sql_source.CONN)
-
-prices = prices[prices.data_date >= '2003-01-01']
-
-prices.to_hdf(filepath, 'table', format='table', data_columns=['data_date', 'sec_id'], mode='w')
-
-sql_source.close_connection()
+    ref.close_connection()
 
 
 def download_portfolio_data(**kwargs):
-    sql_semoms = Access_SQL_DB(os.environ.get('MySQL_Server'), db='semoms')
+    sql_semoms = Access_SQL_DB(host = SQLHost, db='semoms')
+
     # account history
     logging.info('Downloading trading account history')
     ah = pd.read_sql_table('account_history', sql_semoms.CONN)
-    ah.to_hdf(os.path.join(DataDir, 'account_history.hdf'), 'table', mode='w')
+    ah.to_parquet(os.path.join(DataDir, 'account_history.parquet'))
 
     # account positions
     logging.info('Downloading trading account positions')
-    pos = pd.read_sql_table('nav_portfolio', sql_semoms.CONN)
-    pos.to_hdf(os.path.join(DataDir, 'nav_portfolio.hdf'), 'table', mode='w')
+    pos = pd.read_sql_table('nav_portfolio_v2', sql_semoms.CONN)
+    pos.to_parquet(os.path.join(DataDir, 'nav_portfolio.parquet'))
+
     sql_semoms.close_connection()
+
+def download_factor_returns(**kwargs):
+    logging.info('Downloading factor returns')
+    ref = AccessReference(sql_host = SQLHost)
+
+    df = ref.get_factor_returns(axioma_model='sh')
+    df = df.drop(['date_modified','date_created'],axis=1) 
+    df.to_parquet(os.path.join(DataDir, 'factor_returns.parquet'))
+
+    ref.close_connection()
 
 
 def download_sec_ownership_data(**kwargs):
-    sql_source = Access_SQL_Source(os.environ.get('MySQL_Server'))
+    sql = Access_SQL_DB(SQLHost, db='reference')
     logging.info('Downloading sec_forms_ownership_source')
     cols = ['SECAccNumber', 'IssuerCIK', 'FilerCIK', 'URL', 'AcceptedDate', 'FilerName', 'InsiderTitle', 'Director',
-            'TenPercentOwner',
-            'TransType', 'DollarValue', 'valid_purchase', 'valid_sale', 'FilingDate']
-    formsT = Table('sec_forms_ownership_source', sql_source.META, autoload=True)
+            'TenPercentOwner','TransType', 'DollarValue', 'valid_purchase', 'valid_sale', 'FilingDate']
+    formsT = Table('sec_forms_ownership_source', sql.META, autoload=True)
     filepath_full = os.path.join(DataDir, 'sec_forms_ownership_source_full.hdf')
     if os.path.exists(filepath_full) and not (kwargs['clear_existing']):
         forms = pd.read_hdf(filepath_full, 'table')
         max_date = forms.FilingDate.max()
-        df = pd.read_sql(select([formsT.c[x] for x in cols]).where(forms.c.FilingDate > max_date), sql_source.CONN)
+        df = pd.read_sql(select([formsT.c[x] for x in cols]).where(formsT.c.FilingDate > max_date), sql.CONN)
         forms = pd.concat([forms, df], ignore_index=True)
     else:
-        forms = pd.read_sql(select([formsT.c[x] for x in cols]), sql_source.CONN)
+        forms = pd.read_sql(select([formsT.c[x] for x in cols]), sql.CONN)
 
     forms.to_hdf(filepath_full, 'table', format='table', data_columns=['IssuerCIK', 'FilingDate'], mode='w')
-    sql_source.close_connection()
+    sql.close_connection()
 
 
 def download_equities_signal_data(**kwargs):
-    sql_equities = Access_SQL_DB(os.environ.get('MySQL_Server'), db='equity_models')
-    logging.info('Downloading equities_signal_data')
-    # full signals file
-    filepath_full = os.path.join(DataDir, 'equities_signals_full.hdf')
-
-    if os.path.exists(filepath_full) and (not kwargs['clear_existing']):
-        signalsT = Table('V_website', sql_equities.META, autoload=True)
-        signals = pd.read_hdf(filepath_full, 'table')
-        max_date = signals.data_date.max()
-        df = pd.read_sql(signalsT.select().where(signalsT.c.data_date > max_date), sql_equities.CONN)
-        signals = pd.concat([signals, df], ignore_index=True)
-    else:
-        signals = pd.read_sql_table('V_website', sql_equities.CONN)
+    logging.info('Downloading equities signal data')
+    cols = ['sec_id','ticker','data_date','SignalConfidence','Sector','Industry','market_cap','close','adj_close']
+    signals = pd.read_parquet('/home/shared/gcfs/home/prod/projects/signal_stacker3/ml_models/Model_%s/data_with_signals.parquet'%SignalsModel,columns = cols)
+    signals = signals[signals.SignalConfidence.notnull()]
 
     signals['Long'] = (signals.SignalConfidence > EnterLong).astype(int)
     signals['Short'] = (signals.SignalConfidence < EnterShort).astype(int)
@@ -115,53 +117,50 @@ def download_equities_signal_data(**kwargs):
     signals['SignalDirection'] = signals.apply(
         lambda x: 'Long' if x.Long == 1 else 'Short' if x.Short == 1 else 'Neutral', axis=1)
 
-    signals.zacks_x_sector_desc.fillna('', inplace=True)
-    signals.zacks_m_ind_desc.fillna('', inplace=True)
+    signals.Sector.fillna('', inplace=True)
+    signals.Industry.fillna('', inplace=True)
 
+    # write full signals file
+    filepath_full = os.path.join(DataDir, 'equities_signals_full.hdf')
     signals.to_hdf(filepath_full, 'table', format='table',
-                   data_columns=['data_date', 'ticker', 'zacks_x_sector_desc', 'zacks_m_ind_desc'], mode='w')
+                   data_columns=['data_date', 'ticker', 'Sector', 'Industry'], mode='w')
 
-    max_date = signals.data_date.max()
 
     # write latest signal file
-    filepath_latest = os.path.join(DataDir, 'equities_signals_latest.hdf')
+    max_date = signals.data_date.max()
     latest = signals[signals.data_date == max_date]
-    latest.to_hdf(filepath_latest, 'table')
+    latest.to_parquet(os.path.join(DataDir, 'equities_signals_latest.parquet'))
 
     # sec ind signals file
-    filepath_sec_ind = os.path.join(DataDir, 'equities_signals_sec_ind.hdf')
-
     signals['Long_MC'] = signals['Long'] * signals['market_cap']
     signals['Short_MC'] = signals['Short'] * signals['market_cap']
     signals['Tot_MC'] = signals['Long_MC'] + signals['Short_MC']
 
-    ind = signals.groupby(['data_date', 'zacks_x_sector_desc', 'zacks_m_ind_desc']).sum()[
+    ind = signals.groupby(['data_date', 'Sector', 'Industry']).sum()[
         ['Long', 'Short', 'Neutral', 'Long_MC', 'Short_MC', 'Tot_MC']]
     ind['Net'] = (ind['Long'] - ind['Short']) / (ind['Long'] + ind['Short'])
-    ind['Net - 1wk delta'] = ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(5)
-    ind['Net - 1mo delta'] = ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(20)
+    ind['Net - 1wk delta'] = ind.groupby(level=['Sector', 'Industry'])['Net'].diff(5)
+    ind['Net - 1mo delta'] = ind.groupby(level=['Sector', 'Industry'])['Net'].diff(20)
     ind['NetW'] = (ind['Long_MC'] - ind['Short_MC']) / ind['Tot_MC']
-    ind['NetW - 1wk delta'] = ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['NetW'].diff(5)
-    ind['NetW - 1mo delta'] = ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['NetW'].diff(20)
-    ind.reset_index(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'], drop=False, inplace=True)
+    ind['NetW - 1wk delta'] = ind.groupby(level=['Sector', 'Industry'])['NetW'].diff(5)
+    ind['NetW - 1mo delta'] = ind.groupby(level=['Sector', 'Industry'])['NetW'].diff(20)
+    ind.reset_index(level=['Sector', 'Industry'], drop=False, inplace=True)
 
-    sec = signals.groupby(['data_date', 'zacks_x_sector_desc']).sum()[
+    sec = signals.groupby(['data_date', 'Sector']).sum()[
         ['Long', 'Short', 'Neutral', 'Long_MC', 'Short_MC', 'Tot_MC']]
     sec['Net'] = (sec['Long'] - sec['Short']) / (sec['Long'] + sec['Short'])
-    sec['Net - 1wk delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5)
-    sec['Net - 1mo delta'] = sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20)
+    sec['Net - 1wk delta'] = sec.groupby(level=['Sector'])['Net'].diff(5)
+    sec['Net - 1mo delta'] = sec.groupby(level=['Sector'])['Net'].diff(20)
     sec['NetW'] = (sec['Long_MC'] - sec['Short_MC']) / sec['Tot_MC']
-    sec['NetW - 1wk delta'] = sec.groupby(level=['zacks_x_sector_desc'])['NetW'].diff(5)
-    sec['NetW - 1mo delta'] = sec.groupby(level=['zacks_x_sector_desc'])['NetW'].diff(20)
+    sec['NetW - 1wk delta'] = sec.groupby(level=['Sector'])['NetW'].diff(5)
+    sec['NetW - 1mo delta'] = sec.groupby(level=['Sector'])['NetW'].diff(20)
 
-    sec.reset_index(level=['zacks_x_sector_desc'], drop=False, inplace=True)
-    sec['zacks_m_ind_desc'] = 'All'
+    sec.reset_index(level=['Sector'], drop=False, inplace=True)
+    sec['Industry'] = 'All'
 
     sec_ind = pd.concat([ind.loc[max_date], sec.loc[max_date]], ignore_index=True)
     sec_ind = sec_ind.fillna(0)
-    sec_ind.to_hdf(filepath_sec_ind, 'table')
-
-    sql_equities.close_connection()
+    sec_ind.to_parquet(os.path.join(DataDir, 'equities_signals_sec_ind.parquet'))
 
 
 def prep_correlation_data():
@@ -301,13 +300,14 @@ def prep_correlation_data():
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--clear_existing', action='store_true', default=False)
-    parser.add_argument('-d', '--do_not_copy_to_prod', action='store_true', default=False)
+    parser.add_argument('-C', '--clear_existing', action='store_true', default=False)
+    parser.add_argument('-P', '--copy_data_to_webserver', action='store_true', default=False)
 
     options = parser.parse_args()
 
-    functions = [download_sec_master_and_pricing,
-                 download_portfolio_data,
+    functions = [download_portfolio_data,
+                 download_factor_returns,
+                 download_sec_master_and_pricing,
                  download_sec_ownership_data,
                  download_equities_signal_data
                  ]
@@ -321,10 +321,10 @@ if __name__ == '__main__':
             logging.error(message)
             logging.error(traceback.format_exc())
 
-            response = Slack().send_slack_message(post_to='productionissues', message=message,
+            response = Slack().send_slack_message(post_to='testing', message=message,
                                                   post_as_username=os.path.basename(__file__))
 
-    if not options.do_not_copy_to_prod:
+    if options.copy_data_to_webserver:
         logging.info('Copying files to remote')
         os.system(
             "gcloud compute copy-files %s --project website-200703 web@semwebserver:%s --zone us-central1-a" % (

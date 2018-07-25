@@ -48,28 +48,28 @@
         .controller('SectorController', function ($scope, $state, SectorService) {
             SectorService.getData().then(function (data) {
                 $scope.exposuresData = data.data.sort(function (a, b) {
-                    if (a.zacks_x_sector_desc > b.zacks_x_sector_desc) return 1;
-                    if (a.zacks_x_sector_desc < b.zacks_x_sector_desc) return -1;
-                    if (a.zacks_m_ind_desc == 'All') return -1;
-                    if (b.zacks_m_ind_desc == 'All') return 1;
+                    if (a.Sector > b.Sector) return 1;
+                    if (a.Sector < b.Sector) return -1;
+                    if (a.Industry == 'All') return -1;
+                    if (b.Industry == 'All') return 1;
                 });
             });
             $scope.headers = [];
             $scope.filterData = [];
             $scope.title = '';
             $scope.collapse = function (entry) {
-                if (entry.zacks_m_ind_desc != 'All') {
+                if (entry.Industry != 'All') {
                     return
                 }
                 var entryObj = $scope.headers.find(function (obj) {
-                    return obj == entry.zacks_x_sector_desc
+                    return obj == entry.Sector
                 });
                 if (entryObj) {
                     $scope.headers = $scope.headers.filter(function (obj) {
                         return obj !== entryObj
                     })
                 } else {
-                    $scope.headers.push(entry.zacks_x_sector_desc)
+                    $scope.headers.push(entry.Sector)
                 }
             };
             $scope.showSector = function (sector) {

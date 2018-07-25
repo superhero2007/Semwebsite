@@ -2,7 +2,17 @@ from .mixins import GroupRequiredMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-import os
+import datetime, time
+import pandas as pd
+import sys, os
+import numpy as np
+from pandas.tseries.offsets import BDay
+import scipy.stats
+import igraph
+try: 
+    from .semutils.analytics.portfolio.metrics import calculate_drawdowns
+except:
+    from semutils.analytics.portfolio.metrics import calculate_drawdowns
 
 APP_ROOT = os.path.realpath(os.path.dirname(__file__))
 DataDir = os.path.join(APP_ROOT, 'data')
@@ -13,31 +23,24 @@ DataDir = os.path.join(APP_ROOT, 'data')
 #  pass
 # DataDir = 'data_prod'
 
-import datetime, time
-import pandas as pd
-import sys, os
-import numpy as np
-from pandas.tseries.offsets import BDay
-import scipy.stats
-import igraph
 
 
 class TradingView(GroupRequiredMixin, APIView):
     group_required = ['trading']
 
     def get(self, request, format=None):
-        ah = pd.read_hdf(os.path.join(DataDir, 'account_history.hdf'), 'table')
+        ah = pd.read_parquet(os.path.join(DataDir, 'account_history.parquet'))
         ah['Portfolio_daily_return'] = ah.PnlReturn
         ah['Portfolio_equity_curve'] = (1 + ah.CumPnl)
 
-        benchmarks = [('SP500', 'S&P5'), ('SP400', 'SPMC'), ('SP600', 'S&P6')]
+        benchmarks = ['SP500','SP400','SP600']
 
-        for b, m_ticker in benchmarks:
-            b_data = pd.read_hdf(os.path.join(DataDir, b + '.hdf'), 'table')
-            ah[b + '_daily_return'] = ah.TradeDate.map(b_data.adj_close.pct_change())
+        for b in benchmarks:
+            b_data = pd.read_parquet(os.path.join(DataDir, b + '.parquet'))
+            ah[b + '_daily_return'] = ah.TradeDate.map(b_data.IDX_PRICE.pct_change())
             ah[b + '_equity_curve'] = (1 + ah[b + '_daily_return']).cumprod()
 
-        stats_cols = ['Portfolio'] + [x[0] for x in benchmarks]
+        stats_cols = ['Portfolio'] + [x for x in benchmarks]
         stats = pd.DataFrame(columns=stats_cols)
 
         for c in stats_cols:
@@ -54,9 +57,9 @@ class TradingView(GroupRequiredMixin, APIView):
             stats.loc['Sharpe - Annualized', c] = "{0:.1f}".format(np.sqrt(252) * daily_ret.mean() / daily_ret.std())
             stats.loc['Sortino - Annualized', c] = "{0:.1f}".format(
                 np.sqrt(252) * daily_ret.mean() / daily_ret.clip(upper=0).std())
-            drawdown_series, max_drawdown, drawdown_dur = self.create_drawdowns(ah[c + '_equity_curve'])
+            drawdown_series, max_drawdown, drawdown_dur, max_drawdown_dur = calculate_drawdowns(ah[c + '_equity_curve'])
             stats.loc['Max Drawdown (bps)', c] = "{0:.0f}".format(max_drawdown * 10000)
-            stats.loc['Max Drawdown Days', c] = "{0:.0f}".format(drawdown_dur)
+            stats.loc['Max Drawdown Days', c] = "{0:.0f}".format(max_drawdown_dur)
         stats.index.name = 'Metric'
 
         StartingDate = ah.TradeDate.iloc[0]
@@ -82,67 +85,47 @@ class TradingView(GroupRequiredMixin, APIView):
 
         return Response(context)
 
-    def create_drawdowns(self, returns):
-        # Calculate the cumulative returns curve
-        # and set up the High Water Mark
-        hwm = [0]
-
-        # Create the drawdown and duration series
-        idx = returns.index
-        drawdown = pd.Series(index=idx)
-        duration = pd.Series(index=idx)
-
-        # Loop over the index range
-        for t in range(1, len(idx)):
-            hwm.append(max(hwm[t - 1], returns.ix[t]))
-            drawdown.ix[t] = (hwm[t] - returns.ix[t]) / hwm[t]
-            duration.ix[t] = (0 if drawdown.ix[t] == 0 else duration.ix[t - 1] + 1)
-
-        return drawdown, drawdown.max(), duration.max()
-
 
 class TradingExposuresView(GroupRequiredMixin, APIView):
     group_required = ['trading']
 
     def get(self, request, format=None):
         ## ticker matching doesn't work well. Needs to be converted to CUSIP
-        pos = pd.read_hdf(os.path.join(DataDir, 'nav_portfolio.hdf'), 'table')
-        pos.Symbol = pos.Symbol.str.replace(' US', '')
+        pos = pd.read_parquet(os.path.join(DataDir, 'nav_portfolio.parquet'))
+        pos = pos.drop(['Sector'],axis=1)
+        sm = pd.read_parquet(os.path.join(DataDir, 'sec_master.parquet'))
 
-        sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
-        sm.ticker = sm.ticker.str.replace('.', '/')
+        pos = pos.merge(sm, on='sec_id', how='left')
+        daily_nav = pos.groupby('data_date').MarketValueBase.sum()
 
-        pos = pos.merge(sm, left_on='Symbol', right_on='ticker', how='left')
-        daily_nav = pos.groupby('TradeDate').MarketValueBase.sum()
-
-        pos['nav'] = pos.TradeDate.map(daily_nav)
+        pos['nav'] = pos.data_date.map(daily_nav)
 
         #######NEED TO FIX CASH ############
         pos['weight'] = pos.MarketValueBase / pos.nav
         pos['weight_abs'] = pos.weight.abs()
 
-        gross_ind = pos.groupby(['TradeDate', 'zacks_x_sector_desc', 'zacks_m_ind_desc']).weight_abs.sum().to_frame(
+        gross_ind = pos.groupby(['data_date', 'Sector', 'Industry']).weight_abs.sum().to_frame(
             'Gross')
-        net_ind = pos.groupby(['TradeDate', 'zacks_x_sector_desc', 'zacks_m_ind_desc']).weight.sum().to_frame(
+        net_ind = pos.groupby(['data_date', 'Sector', 'Industry']).weight.sum().to_frame(
             'Net_unadj')
         net_ind = net_ind.join(gross_ind)
         net_ind['Net'] = net_ind['Net_unadj'] / net_ind['Gross']
-        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(
+        net_ind['Net - 1wk delta'] = net_ind.groupby(level=['Sector', 'Industry'])['Net'].diff(
             5).fillna(0)
-        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'])['Net'].diff(
+        net_ind['Net - 1mo delta'] = net_ind.groupby(level=['Sector', 'Industry'])['Net'].diff(
             20).fillna(0)
-        net_ind.reset_index(level=['zacks_x_sector_desc', 'zacks_m_ind_desc'], drop=False, inplace=True)
+        net_ind.reset_index(level=['Sector', 'Industry'], drop=False, inplace=True)
 
-        gross_sec = pos.groupby(['TradeDate', 'zacks_x_sector_desc']).weight_abs.sum().to_frame('Gross')
-        net_sec = pos.groupby(['TradeDate', 'zacks_x_sector_desc']).weight.sum().to_frame('Net_unadj')
+        gross_sec = pos.groupby(['data_date', 'Sector']).weight_abs.sum().to_frame('Gross')
+        net_sec = pos.groupby(['data_date', 'Sector']).weight.sum().to_frame('Net_unadj')
         net_sec = net_sec.join(gross_sec)
         net_sec['Net'] = net_sec['Net_unadj'] / net_sec['Gross']
-        net_sec['Net - 1wk delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(5).fillna(0)
-        net_sec['Net - 1mo delta'] = net_sec.groupby(level=['zacks_x_sector_desc'])['Net'].diff(20).fillna(0)
-        net_sec.reset_index(level=['zacks_x_sector_desc'], drop=False, inplace=True)
-        net_sec['zacks_m_ind_desc'] = 'All'
+        net_sec['Net - 1wk delta'] = net_sec.groupby(level=['Sector'])['Net'].diff(5).fillna(0)
+        net_sec['Net - 1mo delta'] = net_sec.groupby(level=['Sector'])['Net'].diff(20).fillna(0)
+        net_sec.reset_index(level=['Sector'], drop=False, inplace=True)
+        net_sec['Industry'] = 'All'
 
-        max_date = pos.TradeDate.max()
+        max_date = pos.data_date.max()
 
         exposures = pd.concat([net_ind.loc[max_date], net_sec.loc[max_date]], ignore_index=True)
         exposures = exposures.drop('Net_unadj', axis=1)
@@ -155,14 +138,14 @@ class TradingExposuresView(GroupRequiredMixin, APIView):
 
 class SignalsLatestView(APIView):
     def get(self, request, format=None):
-        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
-        signals = pd.read_hdf(filepath, 'table')
+        filepath = os.path.join(DataDir, 'equities_signals_latest.parquet')
+        signals = pd.read_parquet(filepath)
         signals = signals[
-            ['data_date', 'ticker', 'market_cap', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'SignalConfidence',
+            ['data_date', 'ticker', 'market_cap', 'Sector', 'Industry', 'SignalConfidence',
              'SignalDirection']]
         signals.market_cap.fillna(0, inplace=True)
 
-        signals = signals[signals.zacks_x_sector_desc.notnull()]
+        signals = signals[signals.Sector.notnull()]
         # build context
         context = {'data': signals.to_dict(orient='records')}
 
@@ -171,9 +154,9 @@ class SignalsLatestView(APIView):
 
 class SignalsSecIndView(APIView):
     def get(self, request, format=None):
-        filepath = os.path.join(DataDir, 'equities_signals_sec_ind.hdf')
-        signals = pd.read_hdf(filepath, 'table')
-        signals = signals[~signals.zacks_x_sector_desc.isin(['', 'Index'])]
+        filepath = os.path.join(DataDir, 'equities_signals_sec_ind.parquet')
+        signals = pd.read_parquet(filepath)
+        signals = signals[~signals.Sector.isin(['', 'Index'])]
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)
 
@@ -181,9 +164,9 @@ class SignalsSecIndView(APIView):
 class SignalsSectorTableView(APIView):
     def post(self, request, format=None):
         sector = request.data['sector']
-        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
-        signals = pd.read_hdf(filepath, 'table')  # , where='zacks_x_sector_desc=="%s"' % sector)
-        signals = signals[signals.zacks_x_sector_desc == sector]
+        filepath = os.path.join(DataDir, 'equities_signals_latest.parquet')
+        signals = pd.read_parquet(filepath)  # , where='Sector=="%s"' % sector)
+        signals = signals[signals.Sector == sector]
         # build context
         context = {'data': signals.to_dict(orient='records')}
 
@@ -193,9 +176,9 @@ class SignalsSectorTableView(APIView):
 class SignalsIndustryTableView(APIView):
     def post(self, request, format=None):
         industry = request.data['industry']
-        filepath = os.path.join(DataDir, 'equities_signals_latest.hdf')
-        signals = pd.read_hdf(filepath, 'table')  # , where='zacks_m_ind_desc=="%s"' % industry)
-        signals = signals[signals.zacks_m_ind_desc == industry]
+        filepath = os.path.join(DataDir, 'equities_signals_latest.parquet')
+        signals = pd.read_parquet(filepath)  # , where='Industry=="%s"' % industry)
+        signals = signals[signals.Industry == industry]
         # build context
         context = {'data': signals.to_dict(orient='records')}
         return Response(context)
@@ -209,29 +192,29 @@ class SignalsTickerView(APIView):
         ticker = ticker.upper()
 
         ## find company name and cik
-        sm = pd.read_hdf(os.path.join(DataDir, 'sec_master.hdf'), 'table')
+        sm = pd.read_parquet(os.path.join(DataDir, 'sec_master.parquet'))
         sm = sm[sm.ticker == ticker]
         if len(sm) == 1:
-            comp_name = sm.iloc[0].comp_name
-            cik = sm.iloc[0].comp_cik
+            comp_name = sm.iloc[0].proper_name
+            cik = sm.iloc[0].cik
         else:
             return Response({'signal_data_found': False})
 
         filepath = os.path.join(DataDir, 'equities_signals_full.hdf')
 
-        signal_data_columns = ['data_date', 'market_cap', 'ticker', 'zacks_x_sector_desc', 'zacks_m_ind_desc', 'close',
+        signal_data_columns = ['data_date', 'market_cap', 'ticker', 'Sector', 'Industry', 'close',
                                'adj_close', 'SignalConfidence']
 
         signals = pd.read_hdf(filepath, 'table', where='ticker=="%s"' % ticker)[signal_data_columns]
-
+        signals = signals[signals.SignalConfidence.notnull()]
         ## Check if signal data exists
         if not len(signals):
             return Response({'signal_data_found': False})
 
         # build context
         context = {'ticker': ticker, 'Name': comp_name, 'CIK': cik,
-                   'Sector': signals.zacks_x_sector_desc.iloc[-1],
-                   'Industry': signals.zacks_m_ind_desc.iloc[-1],
+                   'Sector': signals.Sector.iloc[-1],
+                   'Industry': signals.Industry.iloc[-1],
                    'Market Cap': signals.market_cap.iloc[-1],
                    'signal_data': signals[['data_date', 'adj_close', 'SignalConfidence']].to_dict(orient='records'),
                    'signal_data_found': True}
@@ -418,8 +401,8 @@ class NetworkView(APIView):
 
         nodes = pd.read_csv(DataDir + '/sp500_mst_nodes.csv')
         nodes = nodes.drop('zacks_x_ind_desc', axis=1)
-        nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name', 'zacks_x_sector_desc': 'Sector',
-                                      'zacks_m_ind_desc': 'industry'})
+        nodes = nodes.rename(columns={'ticker': 'label', 'comp_name': 'name', 'Sector': 'Sector',
+                                      'Industry': 'industry'})
         nodes['title'] = nodes.apply(lambda x: 'Name: %s<br>Sec: %s<br> ind: %s' % (x['name'], x.Sector, x.industry),
                                      axis=1)
         nodes['color'] = nodes.Sector.map(colors)
@@ -451,20 +434,24 @@ class FactorReturns(APIView):
         start_date = request.data['start_date']
         end_date = request.data['end_date']
         selected_factors = request.data['selected_factors']
-        returns = pd.read_hdf(DataDir + '/AXUS4-MH_ret.hdf', 'table')
+        returns = pd.read_parquet(os.path.join(DataDir,'factor_returns.parquet'))
 
-        style_factors = ['Dividend Yield', 'Earnings Yield',
-                         'Exchange Rate Sensitivity', 'Growth', 'Leverage',
-                         'Liquidity', 'Market Sensitivity', 'Medium-Term Momentum',
-                         'MidCap', 'Profitability', 'Size', 'Value', 'Volatility']
+        style_factors = ['Dividend_Yield', 'Earnings_Yield',
+                         'Exchange_Rate_Sensitivity', 'Growth', 'Leverage',
+                         'Liquidity', 'Market_Sensitivity', 'Medium_Term_Momentum',
+                         'MidCap', 'Profitability', 'Size', 'Value', 'Volatility','Short_Term_Momentum']
+        new_names = []
+        for c in returns.columns:
+            if c in style_factors:
+                new_names.append('Style: '+c)
+            elif c == 'Market_Intercept':
+                new_names.append('Market: Market_Intercept')
+            else:
+                new_names.append('Industry: '+c)
 
-        returns['label'] = ('Style: ' + returns['FactorName']).where(returns.FactorName.isin(style_factors), None)
-        returns.loc[returns.FactorName == 'Market Intercept', 'label'] = 'Market: Market Intercept'
-        returns['label'] = returns.label.where(returns.label.notnull(), 'Industry: ' + returns.FactorName)
+        returns.columns = new_names
+        returns = returns / 100
 
-        returns.set_index(['data_date', 'label'], inplace=True)
-
-        returns = returns['Return'].unstack(level=-1) / 100
         available_dates = returns.index.tolist()
         all_factors = sorted(returns.columns.tolist(), reverse=True)
 
