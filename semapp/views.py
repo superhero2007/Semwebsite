@@ -461,7 +461,7 @@ class FactorReturns(APIView):
         selected_factors = selected_factors if len(selected_factors) else ['Style: Growth', 'Style: Value']
         returns = returns[start_date:end_date][selected_factors]
         returns.iloc[0] = 0
-        returns = (1 + returns).cumprod()
+        #returns = (1 + returns).cumprod()
 
         returns.reset_index(inplace=True)
         context = {'all_factors': all_factors, 'available_dates': available_dates,
