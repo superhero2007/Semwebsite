@@ -264,6 +264,12 @@
                         $scope.data[i].short = 0.45;
                         $scope.data[i].min = 0;
                     }
+                    $scope.chartData = JSON.parse(JSON.stringify($scope.data));
+                    for (var i = 1; i < $scope.chartData.length; i++) {
+                        for (var j = 0; j < $scope.filter.selected_factors.length; j++) {
+                            $scope.chartData[i][$scope.filter.selected_factors[j]] += $scope.chartData[i-1][$scope.filter.selected_factors[j]];
+                        }
+                    }
                     $scope.graphs = [];
                     for (i = 0; i < $scope.filter.selected_factors.length; i++) {
                         $scope.graphs.push(
@@ -343,13 +349,31 @@
                         "export": {
                             "enabled": true
                         },
-                        "dataProvider": $scope.data
+                        "dataProvider": $scope.chartData
+                    });
+                    $scope.flag = false;
+                    chart.addListener("zoomed", function(e) {
+                        if ($scope.flag == true) {
+                            return;
+                        }
+                        var startIndex = e.chart.startIndex, endIndex = e.chart.endIndex;
+                        $scope.chartData = JSON.parse(JSON.stringify($scope.data));
+                        for (var i = startIndex + 1; i <= endIndex; i++) {
+                            for (var j = 0; j < $scope.filter.selected_factors.length; j++) {
+                                $scope.chartData[i][$scope.filter.selected_factors[j]] += $scope.chartData[i-1][$scope.filter.selected_factors[j]];
+                            }
+                        }
+                        chart.dataProvider = $scope.chartData;
+                        $scope.flag = true;
+                        chart.validateData();
+                        chart.zoomToIndexes(startIndex, endIndex - 1);
+                        $scope.flag = false;
                     });
                 });
             };
             $scope.showGraph();
             $scope.dateChange = function (ev, picker) {
-              $scope.showGraph();
+                $scope.showGraph();
             };
         });
 
