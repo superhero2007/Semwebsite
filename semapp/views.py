@@ -450,7 +450,7 @@ class FactorReturns(APIView):
                 new_names.append('Industry: '+c)
 
         returns.columns = new_names
-        returns = returns / 100
+        returns = returns 
 
         available_dates = returns.index.tolist()
         all_factors = sorted(returns.columns.tolist(), reverse=True)
