@@ -493,7 +493,7 @@ class FactorReturns(APIView):
         sf['Group'] = 'Style'
         sf = sf.sort_values(['Group','Factor'])
 
-        df = pd.concat([sf,df],ignore_index=True)['Group','Factor']
+        df = pd.concat([sf,df],ignore_index=True)[['Group','Factor']]
 
         # create context
         context = {'all_factors': all_factors, 'available_dates': available_dates,
