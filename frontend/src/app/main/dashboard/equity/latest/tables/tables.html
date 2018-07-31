@@ -7,8 +7,8 @@
             <th>Market Cap</th>
             <th st-sort="Sector">Sector</th>
             <th st-sort="Industry">Industry</th>
-            <th st-sort="SignalConfidence">SignalConfidence</th>
             <th>SignalDirection</th>
+            <th st-sort="SignalConfidence">SignalConfidence</th>
         </tr>
         <tr>
             <th></th>
@@ -22,11 +22,11 @@
                        class="input-sm form-control search-input"
                        type="search"/>
             </th>
-            <th></th>
             <th><input st-search="SignalDirection" placeholder="Search SignalDirection"
                        class="input-sm form-control search-input"
                        type="search"/>
             </th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -36,8 +36,29 @@
             <td>{{ (item.market_cap / 1000000000).toFixed(1) }}B</td>
             <td>{{ item.Sector }}</td>
             <td>{{ item.Industry }}</td>
-            <td>{{ item.SignalConfidence.toFixed(2) }}</td>
-            <td>{{ item.SignalDirection }}</td>
+            <td class="table-arr">
+                <i class="icon-up" ng-if="item.SignalDirection === 'Long'"></i>
+                <i class="icon-down" ng-if="item.SignalDirection === 'Short'"></i>
+                <span ng-if="item.SignalDirection === 'Neutral'">-</span>
+            </td>
+            <td>
+                <div class="progress" ng-if="item.SignalConfidence > 0.5">
+                  <div class="progress-bar progress-bar-primary" style="width: 50%; visibility: hidden">
+                    <span class="sr-only">Complete</span>
+                  </div>
+                  <div class="progress-bar progress-bar-success" ng-style="{'width': 100 * (item.SignalConfidence - 0.5) + '%'}">
+                    <span class="sr-only">Rest</span>
+                  </div>
+                </div>
+                <div class="progress" ng-if="item.SignalConfidence <= 0.5">
+                  <div class="progress-bar progress-bar-primary" ng-style="{'width': 100 * (0.5 - item.SignalConfidence) + '%', 'visibility': 'hidden' }">
+                    <span class="sr-only">Complete</span>
+                  </div>
+                  <div class="progress-bar progress-bar-danger" ng-style="{'width': 100 * item.SignalConfidence + '%'}">
+                    <span class="sr-only">Rest</span>
+                  </div>
+                </div>
+            </td>
         </tr>
         </tbody>
     </table>

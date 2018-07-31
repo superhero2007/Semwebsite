@@ -4,3 +4,4 @@ semapp/data_dev/correlation_network_files
 semapp/data/correlation_network_files
 .idea/
 db.sqlite3
+semapp/data_dev/*
