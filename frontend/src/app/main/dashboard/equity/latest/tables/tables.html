@@ -1,5 +1,5 @@
 <div class="horizontal-scroll">
-    <table class="table" st-table="latestTableData" st-safe-src="rowCollection">
+    <table class="table" st-table="latestTableData" st-safe-src="rowCollection" style="font-size: 12px;">
         <thead>
         <tr class="sortable ">
             <th st-sort="data_date">Date</th>
@@ -8,7 +8,7 @@
             <th st-sort="Sector">Sector</th>
             <th st-sort="Industry">Industry</th>
             <th>SignalDirection</th>
-            <th st-sort="SignalConfidence">SignalConfidence</th>
+            <th st-sort="SignalConfidence" style="text-align: center;">SignalConfidence</th>
         </tr>
         <tr>
             <th></th>
@@ -36,10 +36,10 @@
             <td>{{ (item.market_cap / 1000000000).toFixed(1) }}B</td>
             <td>{{ item.Sector }}</td>
             <td>{{ item.Industry }}</td>
-            <td class="table-arr">
-                <i class="icon-up" ng-if="item.SignalDirection === 'Long'"></i>
-                <i class="icon-down" ng-if="item.SignalDirection === 'Short'"></i>
-                <span ng-if="item.SignalDirection === 'Neutral'">-</span>
+            <td class="signalDirectionIcon">
+                <i class="icon-up" ng-if="item.SignalDirection === 'Long'" style="margin:0 auto"></i>
+                <i class="icon-down" ng-if="item.SignalDirection === 'Short'" style="margin:0 auto"></i>
+                <i class="ion-minus-round" ng-if="item.SignalDirection === 'Neutral'" style="margin:0 auto"></i>
             </td>
             <td>
                 <div class="progress" ng-if="item.SignalConfidence > 0.5">
@@ -51,10 +51,10 @@
                   </div>
                 </div>
                 <div class="progress" ng-if="item.SignalConfidence <= 0.5">
-                  <div class="progress-bar progress-bar-primary" ng-style="{'width': 100 * (0.5 - item.SignalConfidence) + '%', 'visibility': 'hidden' }">
+                  <div class="progress-bar progress-bar-primary" ng-style="{'width': 100 * item.SignalConfidence + '%', 'visibility': 'hidden' }">
                     <span class="sr-only">Complete</span>
                   </div>
-                  <div class="progress-bar progress-bar-danger" ng-style="{'width': 100 * item.SignalConfidence + '%'}">
+                  <div class="progress-bar progress-bar-danger" ng-style="{'width': 100 * (0.5 - item.SignalConfidence) + '%'}">
                     <span class="sr-only">Rest</span>
                   </div>
                 </div>
@@ -68,5 +68,19 @@
         cursor: pointer;
         font-weight: 600;
         color: #209e91;
+    }
+    .progress {
+        height: 15px;
+        width: 100px;
+        margin: 10px auto;
+    }
+    .signalDirectionIcon i {
+        width: 5px;
+        height: 13px;
+        display: block;
+    }
+    .signalDirectionIcon {
+        width: 5px;
+        padding: 10px 8px 8px 0 !important;
     }
 </style>
