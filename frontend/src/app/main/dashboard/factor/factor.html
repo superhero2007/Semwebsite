@@ -36,8 +36,36 @@
     <div class="col-xlg-9 col-lg-9 col-md-9 col-sm-6 col-xs-12">
         <div ba-panel
              ba-panel-title="Graph"
-             ba-panel-class="with-scroll large-panel">
+             ba-panel-class="panel">
             <div id="myFactor" class="admin-chart"></div>
+        </div>
+    </div>
+    <div class="col-xs-12">
+        <div ba-panel>
+            <div class="form-group col-sm-4 col-xs-12">
+                <div ng-repeat='(key, value) in factor_table_data.first' class="grid-h">
+                    <h3>{{ key }}</h3>
+                    <div ng-repeat="element in value">
+                        {{ element }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-sm-4 col-xs-12">
+                <div ng-repeat='(key, value) in factor_table_data.second' class="grid-h">
+                    <h3>{{ key }}</h3>
+                    <div ng-repeat="element in value">
+                        {{ element }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-sm-4 col-xs-12">
+                <div ng-repeat='(key, value) in factor_table_data.third' class="grid-h">
+                    <h3>{{ key }}</h3>
+                    <div ng-repeat="element in value">
+                        {{ element }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

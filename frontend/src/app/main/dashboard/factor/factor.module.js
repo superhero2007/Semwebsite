@@ -254,13 +254,40 @@
             $scope.multipleItem = {
                 selected: ['Style: Growth', 'Style: Value']
             };
+            $scope.factor_table_data = {
+                all: {},
+                first: {},
+                second: {},
+                third: {}
+            };
             $scope.showGraph = function () {
                 $scope.filter.selected_factors = $scope.multipleItem.selected;
                 FactorService.getData($scope.filter.date.startDate, $scope.filter.date.endDate, $scope.filter.selected_factors).then(function (data) {
                     $scope.data = data.data;
+                    $scope.factor_table_data = {
+                        all: {},
+                        first: {},
+                        second: {},
+                        third: {}
+                    };
+                    for (var i = 0; i < data.factor_table_data.length; i++) {
+                        if (typeof($scope.factor_table_data.all[data.factor_table_data[i]['Group']]) === 'undefined')
+                            $scope.factor_table_data.all[data.factor_table_data[i]['Group']] = [];
+                        $scope.factor_table_data.all[data.factor_table_data[i]['Group']].push(data.factor_table_data[i]['Factor']);
+                    }
+                    var factor_keys = Object.keys($scope.factor_table_data.all);
+                    var row_length = Math.ceil(factor_keys.length / 3);
+                    for (i = 0; i < row_length; i++) {
+                        $scope.factor_table_data.first[factor_keys[i]] = $scope.factor_table_data.all[factor_keys[i]];
+                        $scope.factor_table_data.second[factor_keys[i + row_length]] = $scope.factor_table_data.all[factor_keys[i + row_length]];
+                        if (i + row_length * 2 < factor_keys.length) {
+                            $scope.factor_table_data.third[factor_keys[i + row_length * 2]] = $scope.factor_table_data.all[factor_keys[i + row_length * 2]];
+                        }
+                    }
+                    console.log($scope.factor_table_data);
                     $scope.multipleSelectItems = data.all_factors;
                     $scope.chartData = JSON.parse(JSON.stringify($scope.data));
-                    for (var i = 1; i < $scope.chartData.length; i++) {
+                    for (i = 1; i < $scope.chartData.length; i++) {
                         for (var j = 0; j < $scope.filter.selected_factors.length; j++) {
                             $scope.chartData[i][$scope.filter.selected_factors[j]] = $scope.chartData[i][$scope.filter.selected_factors[j]] * 100 + $scope.chartData[i-1][$scope.filter.selected_factors[j]];
                         }
