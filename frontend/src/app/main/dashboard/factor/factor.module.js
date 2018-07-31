@@ -294,7 +294,7 @@
                                 "hideBulletsCount": 50,
                                 "lineThickness": 2,
                                 "type": "smoothedLine",
-                                "title": "Plot",
+                                "title": $scope.filter.selected_factors[0] + " / " + $scope.filter.selected_factors[1],
                                 "useLineColorForBulletBorder": true,
                                 "valueField": "plot",
                                 "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
@@ -313,7 +313,8 @@
                             gridColor: layoutColors.defaultText,
                             "id": "v1",
                             "position": "right",
-                            "autoGridCount": false
+                            "autoGridCount": false,
+                            unit: "%"
                         },
                         {
                             color: layoutColors.defaultText,
