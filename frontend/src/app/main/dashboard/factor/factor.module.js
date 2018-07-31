@@ -248,7 +248,8 @@
                     startDate: moment("2018-01-01"),
                     endDate: moment()
                 },
-                selected_factors: ['Style: Growth', 'Style: Value']
+                selected_factors: ['Style: Growth', 'Style: Value'],
+                include_it_data: false
             };
             $scope.multipleItem = {
                 selected: ['Style: Growth', 'Style: Value']
@@ -258,16 +259,10 @@
                 FactorService.getData($scope.filter.date.startDate, $scope.filter.date.endDate, $scope.filter.selected_factors).then(function (data) {
                     $scope.data = data.data;
                     $scope.multipleSelectItems = data.all_factors;
-                    for (var i = 0; i < $scope.data.length; i++) {
-                        $scope.data[i].max = 1;
-                        $scope.data[i].long = 0.55;
-                        $scope.data[i].short = 0.45;
-                        $scope.data[i].min = 0;
-                    }
                     $scope.chartData = JSON.parse(JSON.stringify($scope.data));
                     for (var i = 1; i < $scope.chartData.length; i++) {
                         for (var j = 0; j < $scope.filter.selected_factors.length; j++) {
-                            $scope.chartData[i][$scope.filter.selected_factors[j]] += $scope.chartData[i-1][$scope.filter.selected_factors[j]];
+                            $scope.chartData[i][$scope.filter.selected_factors[j]] = $scope.chartData[i][$scope.filter.selected_factors[j]] * 100 + $scope.chartData[i-1][$scope.filter.selected_factors[j]];
                         }
                     }
                     $scope.graphs = [];
@@ -287,6 +282,25 @@
                             })
                     }
 
+                    if ($scope.multipleItem.selected.length === 2 && $scope.filter.include_it_data) {
+                        for (i = 0; i < $scope.chartData.length; i++) {
+                            $scope.chartData[i]["plot"] = ($scope.chartData[i][$scope.filter.selected_factors[0]] + 1) / ($scope.chartData[i][$scope.filter.selected_factors[1]] + 1);
+                        }
+                        $scope.graphs.push(
+                            {
+                                "id": "plot",
+                                "valueAxis": "v2",
+                                color: layoutColors.defaultText,
+                                "hideBulletsCount": 50,
+                                "lineThickness": 2,
+                                "type": "smoothedLine",
+                                "title": "Plot",
+                                "useLineColorForBulletBorder": true,
+                                "valueField": "plot",
+                                "balloonText": "[[title]]<br/><b style='font-size: 130%'>[[value]]</b>"
+                            })
+                    }
+
                     var chart = AmCharts.makeChart("myFactor", {
                         "type": "serial",
                         "theme": "none",
@@ -298,6 +312,14 @@
                             axisColor: layoutColors.defaultText,
                             gridColor: layoutColors.defaultText,
                             "id": "v1",
+                            "position": "right",
+                            "autoGridCount": false
+                        },
+                        {
+                            color: layoutColors.defaultText,
+                            axisColor: layoutColors.defaultText,
+                            gridColor: layoutColors.defaultText,
+                            "id": "v2",
                             "position": "left",
                             "autoGridCount": false
                         }],
@@ -360,7 +382,7 @@
                         $scope.chartData = JSON.parse(JSON.stringify($scope.data));
                         for (var i = startIndex + 1; i <= endIndex; i++) {
                             for (var j = 0; j < $scope.filter.selected_factors.length; j++) {
-                                $scope.chartData[i][$scope.filter.selected_factors[j]] += $scope.chartData[i-1][$scope.filter.selected_factors[j]];
+                                $scope.chartData[i][$scope.filter.selected_factors[j]] = $scope.chartData[i][$scope.filter.selected_factors[j]] * 100 + $scope.chartData[i-1][$scope.filter.selected_factors[j]];
                             }
                         }
                         chart.dataProvider = $scope.chartData;
@@ -373,6 +395,10 @@
             };
             $scope.showGraph();
             $scope.dateChange = function (ev, picker) {
+                $scope.showGraph();
+            };
+            $scope.onChange = function (data, value) {
+                $scope.filter.include_it_data = value;
                 $scope.showGraph();
             };
         });
