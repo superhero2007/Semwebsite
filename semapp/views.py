@@ -6,6 +6,7 @@ import datetime, time
 import pandas as pd
 import sys, os
 import numpy as np
+import re
 from pandas.tseries.offsets import BDay
 import scipy.stats
 import igraph
@@ -464,7 +465,38 @@ class FactorReturns(APIView):
         #returns = (1 + returns).cumprod()
 
         returns.reset_index(inplace=True)
+
+        # construct factor group table
+        f = os.path.join(DataDir,'AXUS4-SH.hry.csv')
+        df = pd.read_csv(f,sep='|',comment='#',header=None)
+        f_o = open(f,mode='r')
+        file_data = f_o.readlines()
+        for l in file_data:
+            if 'Columns' in l:
+                columns = re.sub('#Columns: ','',l.rstrip()).split('|')
+        df.columns = columns
+
+        sectors = df[df.Level=='Sectors']
+        industry_groups = df[df.Level=='Industry Groups']
+        industries = df[df.Level=='Industries']
+
+        industries = industries.rename(columns = {'Parent':'Industry Groups','Name':'Industries'})
+
+        industries['Sectors'] = industries['Industry Groups'].map(industry_groups.set_index('Name')['Parent'])
+        industries['Sectors'] = industries['Sectors'].str.replace('-S','')
+
+        df = industries[['Sectors','Industries']].copy()
+        df.columns = ['Group','Factor']
+        df = df.sort_values(['Group','Factor'])
+
+        sf = pd.DataFrame(style_factors,columns = ['Factor'])
+        sf['Group'] = 'Style'
+        sf = sf.sort_values(['Group','Factor'])
+
+        df = pd.concat([sf,df],ignore_index=True)['Group','Factor']
+
+        # create context
         context = {'all_factors': all_factors, 'available_dates': available_dates,
-                   'data': returns.to_dict(orient='records')}
+                   'data': returns.to_dict(orient='records'),'factor_table_data':df.to_dict(orient='records')}
 
         return Response(context)
